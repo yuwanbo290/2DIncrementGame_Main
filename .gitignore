@@ -1,0 +1,25 @@
+# Godot 4.0+ 标准忽略文件
+.godot/
+.import/
+export_presets.cfg
+export_presets.cfg.*
+
+# 编译输出
+*.pck
+*.zip
+*.apk
+*.aab
+*.exe
+*.dmg
+
+# 用户本地设置（每个开发者不同）
+*.userdata
+*.userdata.*
+
+# 编辑器临时文件
+*.tmp
+*.temp
+
+# 操作系统杂项
+.DS_Store
+Thumbs.db
