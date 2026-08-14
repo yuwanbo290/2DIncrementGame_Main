@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://b685rxbjwkxc7"]
+
+[ext_resource type="Script" uid="uid://cnamlj05yesve" path="res://Scripts/manager/Gamemanager.gd" id="1_abcde"]
+
+[node name="GameManager" type="Node2D" unique_id=202432355]
+script = ExtResource("1_abcde")
+
+[node name="UINode" type="CanvasLayer" parent="." unique_id=703682009]
+
+[node name="UIRoot" type="Control" parent="UINode" unique_id=992318817]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CameraNode" type="Node" parent="." unique_id=1411639102]
+
+[node name="Camera2D" type="Camera2D" parent="CameraNode" unique_id=553538157]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=324839641]

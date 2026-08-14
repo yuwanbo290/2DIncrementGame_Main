@@ -11,8 +11,13 @@ config_version=5
 [application]
 
 config/name="2D_IncrementGame_main"
+run/main_scene="uid://b685rxbjwkxc7"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+UIManager="*uid://c8fymc4iwt3qx"
 
 [display]
 
@@ -25,4 +30,5 @@ window/stretch/aspect="expand"
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"

@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://ctbkkc13uvof5"]
+
+[ext_resource type="Script" uid="uid://bv0pwktxplx1m" path="res://Scripts/ui/startui.gd" id="1_avrgi"]
+[ext_resource type="Texture2D" uid="uid://dt7kcx4pj4jx5" path="res://Textures/ui/start UI/morning.png" id="2_wfxj5"]
+
+[node name="Start UI" type="Control" unique_id=201806693]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_avrgi")
+
+[node name="Bg" type="TextureRect" parent="." unique_id=1700633624]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_wfxj5")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CenterContainer" type="CenterContainer" parent="Bg" unique_id=428100227]
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 650.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Bg/CenterContainer" unique_id=392077760]
+layout_mode = 2
+
+[node name="StartBtn" type="Button" parent="Bg/CenterContainer/VBoxContainer" unique_id=1490486838]
+layout_mode = 2
+text = "开始游戏"
+
+[node name="ExitBtn" type="Button" parent="Bg/CenterContainer/VBoxContainer" unique_id=216174825]
+layout_mode = 2
+text = "退出游戏"
