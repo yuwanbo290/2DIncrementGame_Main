@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://bht8wuqpowi0i"]
+
+[ext_resource type="Script" uid="uid://dmsbh5xljibly" path="res://Scripts/weapon/enemy/Enemy.gd" id="1_6r8yo"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_v76t0"]
+radius = 20.0
+
+[node name="enemy" type="CharacterBody2D" unique_id=1729490261 groups=["enemies"]]
+position = Vector2(578, 287)
+collision_layer = 2
+script = ExtResource("1_6r8yo")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=594790156]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=784063063]
+position = Vector2(20, 20)
+shape = SubResource("CircleShape2D_v76t0")
+debug_color = Color(0.09375, 0.868366, 1, 0.41960785)

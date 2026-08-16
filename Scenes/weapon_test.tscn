@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://w55fdqc5x4d2"]
+
+[ext_resource type="PackedScene" uid="uid://bht8wuqpowi0i" path="res://prefab/enemy/Enemy.tscn" id="1_ahxpy"]
+[ext_resource type="PackedScene" uid="uid://cb7cd8fbdo07v" path="res://prefab/npc/player.tscn" id="2_lgfyj"]
+
+[node name="main" type="Node2D" unique_id=796610214]
+
+[node name="background" type="ColorRect" parent="." unique_id=1354706083]
+offset_right = 1151.0
+offset_bottom = 645.0
+color = Color(0.21063232, 0.26557207, 0.453125, 1)
+
+[node name="Enemy01" parent="." unique_id=825876060 instance=ExtResource("1_ahxpy")]
+move_speed = 50.0
+
+[node name="Enemy02" parent="." unique_id=1729490261 instance=ExtResource("1_ahxpy")]
+move_speed = 50.0
+
+[node name="Enemy03" parent="." unique_id=1004255410 instance=ExtResource("1_ahxpy")]
+move_speed = 50.0
+
+[node name="player00" parent="." unique_id=2140382044 instance=ExtResource("2_lgfyj")]
+position = Vector2(287, 290)
