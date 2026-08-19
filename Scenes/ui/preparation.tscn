@@ -1,0 +1,230 @@
+[gd_scene format=3 uid="uid://wbkwjtj5o7hi"]
+
+[ext_resource type="Script" uid="uid://cm17jf6l8pyvo" path="res://Scripts/ui/preparation.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://65ihxrjf21jx" path="res://Textures/ui/menu_bg.jpg" id="2_bg"]
+
+[node name="Preparation" type="Control" unique_id=1275319831]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Bg" type="TextureRect" parent="." unique_id=568096247]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bg")
+stretch_mode = 6
+
+[node name="TopBar" type="HBoxContainer" parent="." unique_id=1843539214]
+layout_mode = 0
+anchor_right = 1.0
+offset_bottom = 60.0
+theme_override_constants/separation = 15
+
+[node name="BackBtn" type="TextureButton" parent="TopBar" unique_id=1808179427]
+custom_minimum_size = Vector2(110, 48)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="BackLabel" type="Label" parent="TopBar/BackBtn" unique_id=1701457512]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "返回"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TopSpacer" type="Control" parent="TopBar" unique_id=232331633]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GoldLabel" type="Label" parent="TopBar" unique_id=533477056]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "金币: 0"
+
+[node name="SlotInfo" type="Label" parent="TopBar" unique_id=2132187114]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="MainContainer" type="MarginContainer" parent="." unique_id=1906952331]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -581.0
+offset_bottom = -144.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 80
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 80
+theme_override_constants/margin_bottom = 40
+
+[node name="VBox" type="VBoxContainer" parent="MainContainer" unique_id=56894862]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="Title" type="Label" parent="MainContainer/VBox" unique_id=482590047]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 48
+text = "备战"
+horizontal_alignment = 1
+
+[node name="MainRow" type="HBoxContainer" parent="MainContainer/VBox" unique_id=1426741443]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 60
+alignment = 1
+
+[node name="LeftVBox" type="VBoxContainer" parent="MainContainer/VBox/MainRow" unique_id=384647201]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="UpgradeBtn" type="TextureButton" parent="MainContainer/VBox/MainRow/LeftVBox" unique_id=1811068872]
+custom_minimum_size = Vector2(200, 130)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="UpgradeOverlay" type="VBoxContainer" parent="MainContainer/VBox/MainRow/LeftVBox/UpgradeBtn" unique_id=469018196]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+mouse_filter = 2
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="UpgradeLabel" type="Label" parent="MainContainer/VBox/MainRow/LeftVBox/UpgradeBtn/UpgradeOverlay" unique_id=1105202905]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "局外养成"
+
+[node name="UpgradeDesc" type="Label" parent="MainContainer/VBox/MainRow/LeftVBox/UpgradeBtn/UpgradeOverlay" unique_id=102436132]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 13
+text = "强化属性，永久生效"
+
+[node name="ShopBtn" type="TextureButton" parent="MainContainer/VBox/MainRow/LeftVBox" unique_id=1561297107]
+custom_minimum_size = Vector2(200, 130)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="ShopOverlay" type="VBoxContainer" parent="MainContainer/VBox/MainRow/LeftVBox/ShopBtn" unique_id=2060414463]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+mouse_filter = 2
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="ShopLabel" type="Label" parent="MainContainer/VBox/MainRow/LeftVBox/ShopBtn/ShopOverlay" unique_id=2117295469]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "商店"
+
+[node name="ShopDesc" type="Label" parent="MainContainer/VBox/MainRow/LeftVBox/ShopBtn/ShopOverlay" unique_id=780358021]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 13
+text = "购买解锁新武器"
+
+[node name="CenterVBox" type="VBoxContainer" parent="MainContainer/VBox/MainRow" unique_id=1773124574]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TopSpacer" type="Control" parent="MainContainer/VBox/MainRow/CenterVBox" unique_id=963122615]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StartHuntBtn" type="TextureButton" parent="MainContainer/VBox/MainRow/CenterVBox" unique_id=1570884387]
+custom_minimum_size = Vector2(280, 90)
+layout_mode = 2
+size_flags_horizontal = 4
+stretch_mode = 5
+
+[node name="StartHuntLabel" type="Label" parent="MainContainer/VBox/MainRow/CenterVBox/StartHuntBtn" unique_id=236840180]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 32
+text = "开始狩猎"
+
+[node name="EquipBtn" type="TextureButton" parent="MainContainer/VBox/MainRow/CenterVBox" unique_id=1633322729]
+custom_minimum_size = Vector2(200, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+stretch_mode = 5
+
+[node name="EquipOverlay" type="VBoxContainer" parent="MainContainer/VBox/MainRow/CenterVBox/EquipBtn" unique_id=648764623]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 1
+
+[node name="EquipLabel" type="Label" parent="MainContainer/VBox/MainRow/CenterVBox/EquipBtn/EquipOverlay" unique_id=1470524072]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "装备"
+
+[node name="EquipDesc" type="Label" parent="MainContainer/VBox/MainRow/CenterVBox/EquipBtn/EquipOverlay" unique_id=1876311457]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 12
+text = "选择出战武器"

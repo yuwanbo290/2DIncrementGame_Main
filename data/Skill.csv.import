@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://b78c7okhe1cyq"
+
+[deps]
+
+files=["res://data/Skill.skillName.translation", "res://data/Skill.desc.translation", "res://data/Skill.previouId.translation", "res://data/Skill.maxLevel.translation"]
+
+source_file="res://data/Skill.csv"
+dest_files=["res://data/Skill.skillName.translation", "res://data/Skill.desc.translation", "res://data/Skill.previouId.translation", "res://data/Skill.maxLevel.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

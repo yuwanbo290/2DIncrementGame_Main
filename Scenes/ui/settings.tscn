@@ -1,0 +1,272 @@
+[gd_scene format=3 uid="uid://bcsettings01"]
+
+[ext_resource type="Script" uid="uid://drpg7a768ysgg" path="res://Scripts/ui/settings.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://d3gw5nhodfsci" path="res://Textures/ui/panel_bg.jpg" id="2_bg"]
+
+[sub_resource type="StyleBoxFlat" id="6_panel_style"]
+bg_color = Color(0.08, 0.1, 0.14, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.4, 0.5, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="Settings" type="Control" unique_id=1997454126]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Bg" type="TextureRect" parent="." unique_id=70059361]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TopBar" type="HBoxContainer" parent="." unique_id=187946138]
+layout_mode = 0
+anchor_right = 1.0
+offset_bottom = 60.0
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="Title" type="Label" parent="TopBar" unique_id=1286573278]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 36
+text = "设置"
+
+[node name="MainContainer" type="MarginContainer" parent="." unique_id=2031726965]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -559.0
+offset_bottom = -499.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 80
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 80
+theme_override_constants/margin_bottom = 40
+
+[node name="VBox" type="VBoxContainer" parent="MainContainer" unique_id=76681554]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="ContentPanel" type="Panel" parent="MainContainer/VBox" unique_id=1269510970]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("6_panel_style")
+
+[node name="ContentMargin" type="MarginContainer" parent="MainContainer/VBox/ContentPanel" unique_id=878738507]
+layout_mode = 0
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="ContentVBox" type="VBoxContainer" parent="MainContainer/VBox/ContentPanel/ContentMargin" unique_id=1824793016]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="DisplaySection" type="VBoxContainer" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox" unique_id=1391726255]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DisplayTitle" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection" unique_id=1651000970]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "显示设置"
+
+[node name="ResolutionRow" type="HBoxContainer" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection" unique_id=642029801]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="ResolutionLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection/ResolutionRow" unique_id=1826685108]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "分辨率"
+
+[node name="ResolutionOption" type="OptionButton" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection/ResolutionRow" unique_id=890386261]
+custom_minimum_size = Vector2(220, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+
+[node name="WindowRow" type="HBoxContainer" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection" unique_id=1445085543]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="WindowLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection/WindowRow" unique_id=1043038273]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "窗口模式"
+
+[node name="WindowOption" type="OptionButton" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection/WindowRow" unique_id=1522053020]
+custom_minimum_size = Vector2(220, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+
+[node name="Divider1" type="HSeparator" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox" unique_id=1428711036]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+
+[node name="AudioSection" type="VBoxContainer" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox" unique_id=1066735833]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AudioTitle" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection" unique_id=2083791470]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "音频设置"
+
+[node name="MasterRow" type="HBoxContainer" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection" unique_id=1428078394]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="MasterLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection/MasterRow" unique_id=1551156235]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "主音量"
+
+[node name="MasterSlider" type="HSlider" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection/MasterRow" unique_id=1611627018]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+
+[node name="MasterValue" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection/MasterRow" unique_id=1030404413]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "100%"
+horizontal_alignment = 2
+
+[node name="MusicRow" type="HBoxContainer" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection" unique_id=1720529455]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="MusicLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection/MusicRow" unique_id=1458486935]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "音乐"
+
+[node name="MusicSlider" type="HSlider" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection/MusicRow" unique_id=682608992]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+
+[node name="MusicValue" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection/MusicRow" unique_id=88082897]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "100%"
+horizontal_alignment = 2
+
+[node name="SFXRow" type="HBoxContainer" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection" unique_id=1233731082]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="SFXLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection/SFXRow" unique_id=1332380123]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "音效"
+
+[node name="SFXSlider" type="HSlider" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection/SFXRow" unique_id=867086015]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
+
+[node name="SFXValue" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/AudioSection/SFXRow" unique_id=925120217]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 18
+text = "100%"
+horizontal_alignment = 2
+
+[node name="TipLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox" unique_id=848090040]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.7, 0.8, 0.9)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 13
+text = "设置改动即时生效并自动保存"
+horizontal_alignment = 1
+
+[node name="Divider2" type="HSeparator" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox" unique_id=1149257283]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+
+[node name="BtnRow" type="HBoxContainer" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox" unique_id=1841234147]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="ResetBtn" type="TextureButton" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow" unique_id=527227605]
+custom_minimum_size = Vector2(180, 56)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="ResetLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/ResetBtn" unique_id=772749437]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 20
+text = "恢复默认"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SaveBtn" type="TextureButton" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow" unique_id=905717467]
+custom_minimum_size = Vector2(180, 56)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="SaveLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/SaveBtn" unique_id=1379094489]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 20
+text = "返回"
+horizontal_alignment = 1
+vertical_alignment = 1

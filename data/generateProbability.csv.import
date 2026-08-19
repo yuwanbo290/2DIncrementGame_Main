@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://keivvsjjim5x"
+
+[deps]
+
+files=["res://data/generateProbability.duckId.translation", "res://data/generateProbability.name.translation", "res://data/generateProbability.weight.translation"]
+
+source_file="res://data/generateProbability.csv"
+dest_files=["res://data/generateProbability.duckId.translation", "res://data/generateProbability.name.translation", "res://data/generateProbability.weight.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

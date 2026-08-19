@@ -11,18 +11,24 @@ config_version=5
 [application]
 
 config/name="2D_IncrementGame_main"
-run/main_scene="uid://b685rxbjwkxc7"
+run/main_scene="res://Scenes/GameManager.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
-UIManager="*uid://c8fymc4iwt3qx"
+UIManager="*res://Scripts/manager/UIManager.gd"
+ConfigSystem="*res://Scripts/core/config_system.gd"
+SaveSystem="*res://Scripts/core/save_system.gd"
 
 [display]
 
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/table_exporter/plugin.cfg")
 
 [input]
 

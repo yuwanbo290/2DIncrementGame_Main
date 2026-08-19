@@ -1,0 +1,69 @@
+[gd_resource type="Resource" script_class="TableResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_table"]
+
+[resource]
+script = ExtResource("1_table")
+table_name = "weapon_table"
+rows = Array[Dictionary]([
+	{
+		"id": "rifle_basic",
+		"name": "基础步枪",
+		"desc": "单发点射，精准可靠",
+		"damage": 10,
+		"fire_rate": 0.5,
+		"range": 300,
+		"spread": 0.05,
+		"bullet_speed": 600,
+		"magazine_size": 15,
+		"reload_time": 1.5,
+		"price": 0,
+		"icon": "",
+		"unlocked": true
+	},
+	{
+		"id": "smg",
+		"name": "冲锋枪",
+		"desc": "高射速，近战利器",
+		"damage": 6,
+		"fire_rate": 0.1,
+		"range": 200,
+		"spread": 0.15,
+		"bullet_speed": 700,
+		"magazine_size": 30,
+		"reload_time": 2.0,
+		"price": 2000,
+		"icon": "",
+		"unlocked": false
+	},
+	{
+		"id": "shotgun",
+		"name": "霰弹枪",
+		"desc": "近距离爆发伤害",
+		"damage": 25,
+		"fire_rate": 1.2,
+		"range": 150,
+		"spread": 0.3,
+		"bullet_speed": 500,
+		"magazine_size": 6,
+		"reload_time": 2.5,
+		"price": 3500,
+		"icon": "",
+		"unlocked": false
+	},
+	{
+		"id": "sniper",
+		"name": "狙击枪",
+		"desc": "远距离精准打击",
+		"damage": 80,
+		"fire_rate": 2.0,
+		"range": 800,
+		"spread": 0.01,
+		"bullet_speed": 1200,
+		"magazine_size": 5,
+		"reload_time": 3.0,
+		"price": 5000,
+		"icon": "",
+		"unlocked": false
+	}
+])

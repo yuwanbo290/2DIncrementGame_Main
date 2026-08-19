@@ -1,0 +1,385 @@
+[gd_scene format=3 uid="uid://bc123save"]
+
+[ext_resource type="Script" uid="uid://bwd7g3b6cvcpa" path="res://Scripts/ui/save_select.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://65ihxrjf21jx" path="res://Textures/ui/menu_bg.jpg" id="2_bg"]
+
+[sub_resource type="StyleBoxFlat" id="6_slot_style"]
+bg_color = Color(0.08, 0.1, 0.14, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.4, 0.5, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="SaveSelect" type="Control" unique_id=1091841053]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Bg" type="TextureRect" parent="." unique_id=891772656]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TopBar" type="HBoxContainer" parent="." unique_id=785873367]
+layout_mode = 0
+anchor_right = 1.0
+offset_bottom = 60.0
+theme_override_constants/separation = 15
+
+[node name="BackBtn" type="TextureButton" parent="TopBar" unique_id=638452027]
+custom_minimum_size = Vector2(110, 48)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="BackLabel" type="Label" parent="TopBar/BackBtn" unique_id=1923198635]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "返回"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TopSpacer" type="Control" parent="TopBar" unique_id=1813248444]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="TopBar" unique_id=1936396598]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 36
+text = "选择存档"
+horizontal_alignment = 1
+
+[node name="MainContainer" type="MarginContainer" parent="." unique_id=1531939848]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -562.0
+offset_bottom = -96.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 80
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 80
+theme_override_constants/margin_bottom = 40
+
+[node name="VBox" type="VBoxContainer" parent="MainContainer" unique_id=1465984706]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="SlotContainer" type="HBoxContainer" parent="MainContainer/VBox" unique_id=457938453]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 25
+alignment = 1
+
+[node name="Slot0" type="Panel" parent="MainContainer/VBox/SlotContainer" unique_id=412474442]
+custom_minimum_size = Vector2(300, 360)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("6_slot_style")
+
+[node name="Slot0Margin" type="MarginContainer" parent="MainContainer/VBox/SlotContainer/Slot0" unique_id=1574333359]
+layout_mode = 0
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="Slot0VBox" type="VBoxContainer" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin" unique_id=502187492]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Slot0Name" type="Label" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox" unique_id=338609246]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "存档 1"
+horizontal_alignment = 1
+
+[node name="Slot0Status" type="Label" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox" unique_id=1517196132]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.85, 1)
+theme_override_font_sizes/font_size = 16
+text = "空存档"
+horizontal_alignment = 1
+
+[node name="Slot0Info" type="VBoxContainer" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox" unique_id=1896411616]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="Slot0Playtime" type="Label" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Info" unique_id=857841105]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "游玩时间: --"
+horizontal_alignment = 1
+
+[node name="Slot0LastPlayed" type="Label" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Info" unique_id=1117572867]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "上次游玩: --"
+horizontal_alignment = 1
+
+[node name="Slot0Btns" type="HBoxContainer" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox" unique_id=1482969758]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Slot0SelectBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Btns" unique_id=1516627238]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="Slot0SelectLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Btns/Slot0SelectBtn" unique_id=571120895]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "继续"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot0DeleteBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Btns" unique_id=1675165597]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="Slot0DeleteLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Btns/Slot0DeleteBtn" unique_id=583404566]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.6, 0.6, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "删除"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot1" type="Panel" parent="MainContainer/VBox/SlotContainer" unique_id=884366900]
+custom_minimum_size = Vector2(300, 360)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("6_slot_style")
+
+[node name="Slot1Margin" type="MarginContainer" parent="MainContainer/VBox/SlotContainer/Slot1" unique_id=500380167]
+layout_mode = 0
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="Slot1VBox" type="VBoxContainer" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin" unique_id=1797611335]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Slot1Name" type="Label" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox" unique_id=2003249869]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "存档 2"
+horizontal_alignment = 1
+
+[node name="Slot1Status" type="Label" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox" unique_id=1834267045]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.85, 1)
+theme_override_font_sizes/font_size = 16
+text = "空存档"
+horizontal_alignment = 1
+
+[node name="Slot1Info" type="VBoxContainer" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox" unique_id=661429196]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="Slot1Playtime" type="Label" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Info" unique_id=1699653846]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "游玩时间: --"
+horizontal_alignment = 1
+
+[node name="Slot1LastPlayed" type="Label" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Info" unique_id=503117023]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "上次游玩: --"
+horizontal_alignment = 1
+
+[node name="Slot1Btns" type="HBoxContainer" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox" unique_id=1880014093]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Slot1SelectBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Btns" unique_id=135286294]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="Slot1SelectLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Btns/Slot1SelectBtn" unique_id=570971978]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "继续"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot1DeleteBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Btns" unique_id=1600791136]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="Slot1DeleteLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Btns/Slot1DeleteBtn" unique_id=354617979]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.6, 0.6, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "删除"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot2" type="Panel" parent="MainContainer/VBox/SlotContainer" unique_id=175168171]
+custom_minimum_size = Vector2(300, 360)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("6_slot_style")
+
+[node name="Slot2Margin" type="MarginContainer" parent="MainContainer/VBox/SlotContainer/Slot2" unique_id=300052696]
+layout_mode = 0
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="Slot2VBox" type="VBoxContainer" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin" unique_id=736430693]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Slot2Name" type="Label" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox" unique_id=1012097944]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
+text = "存档 3"
+horizontal_alignment = 1
+
+[node name="Slot2Status" type="Label" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox" unique_id=457575394]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.85, 1)
+theme_override_font_sizes/font_size = 16
+text = "空存档"
+horizontal_alignment = 1
+
+[node name="Slot2Info" type="VBoxContainer" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox" unique_id=926171656]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="Slot2Playtime" type="Label" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Info" unique_id=213408791]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "游玩时间: --"
+horizontal_alignment = 1
+
+[node name="Slot2LastPlayed" type="Label" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Info" unique_id=1197783236]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "上次游玩: --"
+horizontal_alignment = 1
+
+[node name="Slot2Btns" type="HBoxContainer" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox" unique_id=1286399754]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Slot2SelectBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Btns" unique_id=5439331]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="Slot2SelectLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Btns/Slot2SelectBtn" unique_id=157633472]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "继续"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Slot2DeleteBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Btns" unique_id=1166102225]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+stretch_mode = 5
+
+[node name="Slot2DeleteLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Btns/Slot2DeleteBtn" unique_id=1245503686]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_colors/font_color = Color(1, 0.6, 0.6, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "删除"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TipLabel" type="Label" parent="MainContainer/VBox" unique_id=1884437244]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.7, 0.8, 0.9)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 14
+text = "点击「继续」进入存档；空存档将创建新游戏"
+horizontal_alignment = 1
