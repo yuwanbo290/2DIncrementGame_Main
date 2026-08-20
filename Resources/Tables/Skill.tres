@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="TableResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_table"]
+
+[resource]
+script = ExtResource("1_table")
+table_name = "Skill"
+rows = Array[Dictionary]([
+	{
+		"Id": 1,
+		"skillName": "强力射击",
+		"desc": "提升单次射击的攻击力",
+		"previouId": 0,
+		"maxLevel": 5
+	},
+	{
+		"Id": 2,
+		"skillName": "分裂射击",
+		"desc": "一次可以发射多发子弹",
+		"previouId": 1,
+		"maxLevel": 3
+	},
+	{
+		"Id": 3,
+		"skillName": "超级子弹",
+		"desc": "提升子弹伤害，并解锁特殊能力",
+		"previouId": 1,
+		"maxLevel": 1
+	},
+	{
+		"Id": 4,
+		"skillName": "弹性子弹",
+		"desc": "子弹击中边界后能够弹射",
+		"previouId": 3,
+		"maxLevel": 3
+	}
+])

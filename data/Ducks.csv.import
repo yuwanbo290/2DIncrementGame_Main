@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c6a6gaplm3xkl"
+
+[deps]
+
+files=["res://data/Ducks.duckName.translation", "res://data/Ducks.healthNum.translation", "res://data/Ducks.coin.translation", "res://data/Ducks.moveSpeed.translation", "res://data/Ducks.texture.translation", "res://data/Ducks.spriteFrames.translation"]
+
+source_file="res://data/Ducks.csv"
+dest_files=["res://data/Ducks.duckName.translation", "res://data/Ducks.healthNum.translation", "res://data/Ducks.coin.translation", "res://data/Ducks.moveSpeed.translation", "res://data/Ducks.texture.translation", "res://data/Ducks.spriteFrames.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

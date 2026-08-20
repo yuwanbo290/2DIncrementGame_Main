@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="TableResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_table"]
+
+[resource]
+script = ExtResource("1_table")
+table_name = "Ducks"
+rows = Array[Dictionary]([
+	{
+		"duckID": 1,
+		"duckName": "小黄鸭",
+		"healthNum": 5.0,
+		"coin": 1.0,
+		"moveSpeed": 10.0,
+		"texture": "duck_fast_1",
+		"spriteFrames": "fast"
+	},
+	{
+		"duckID": 2,
+		"duckName": "休闲鸭",
+		"healthNum": 10.0,
+		"coin": 2.0,
+		"moveSpeed": 10.0,
+		"texture": "duck_fast_2",
+		"spriteFrames": "fast"
+	}
+])

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BaseConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/base_config.gd" id="1_baseconfig"]
+
+[resource]
+script = ExtResource("1_baseconfig")
+round_time = 60.0
+base_attack = 10.0
+base_attack_speed = 1.0
+base_crit_rate = 0.05
+base_crit_dmg = 1.5
+spawn_interval = 2.0
+spawn_per_wave = 1
+boss_nodes = Array[int]([20, 50, 100, 250])
+buff_trigger_kills = Array[int]([10, 25, 45])
+buff_choice_count = 3

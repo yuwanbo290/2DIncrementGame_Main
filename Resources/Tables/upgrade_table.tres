@@ -1,0 +1,75 @@
+[gd_resource type="Resource" script_class="TableResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_table"]
+
+[resource]
+script = ExtResource("1_table")
+table_name = "upgrade_table"
+rows = Array[Dictionary]([
+	{
+		"id": "damage_up",
+		"name": "伤害强化",
+		"desc": "每级增加 10% 伤害",
+		"max_level": 20,
+		"base_cost": 100,
+		"cost_multiplier": 1.5,
+		"effect_per_level": 0.1,
+		"icon": "",
+		"category": "combat"
+	},
+	{
+		"id": "health_up",
+		"name": "生命强化",
+		"desc": "每级增加 5 最大生命",
+		"max_level": 30,
+		"base_cost": 80,
+		"cost_multiplier": 1.4,
+		"effect_per_level": 5,
+		"icon": "",
+		"category": "survival"
+	},
+	{
+		"id": "fire_rate_up",
+		"name": "射速强化",
+		"desc": "每级提升 5% 射速",
+		"max_level": 15,
+		"base_cost": 150,
+		"cost_multiplier": 1.6,
+		"effect_per_level": 0.05,
+		"icon": "",
+		"category": "combat"
+	},
+	{
+		"id": "magazine_up",
+		"name": "弹夹扩容",
+		"desc": "每级增加 1 发弹容量",
+		"max_level": 20,
+		"base_cost": 120,
+		"cost_multiplier": 1.5,
+		"effect_per_level": 1,
+		"icon": "",
+		"category": "combat"
+	},
+	{
+		"id": "gold_up",
+		"name": "金币加成",
+		"desc": "每级提升 10% 金币收益",
+		"max_level": 25,
+		"base_cost": 200,
+		"cost_multiplier": 1.45,
+		"effect_per_level": 0.1,
+		"icon": "",
+		"category": "economy"
+	},
+	{
+		"id": "luck_up",
+		"name": "幸运提升",
+		"desc": "每级增加 2% 暴击几率",
+		"max_level": 15,
+		"base_cost": 300,
+		"cost_multiplier": 1.7,
+		"effect_per_level": 0.02,
+		"icon": "",
+		"category": "combat"
+	}
+])
