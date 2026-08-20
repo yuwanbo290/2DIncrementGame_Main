@@ -1,10 +1,11 @@
 extends UIBase
 
+
 func on_create():
 	var back_btn: TextureButton = $TopBar/BackBtn as TextureButton
 	var upgrade_btn: TextureButton = $MainContainer/VBox/MainRow/LeftVBox/UpgradeBtn as TextureButton
 	var shop_btn: TextureButton = $MainContainer/VBox/MainRow/LeftVBox/ShopBtn as TextureButton
-	var equip_btn: TextureButton = $MainContainer/VBox/MainRow/CenterVBox/EquipBtn as TextureButton
+	var weapon_btn: TextureButton = $MainContainer/VBox/MainRow/CenterVBox/WeaponBtn as TextureButton
 	var start_btn: TextureButton = $MainContainer/VBox/MainRow/CenterVBox/StartHuntBtn as TextureButton
 
 	if back_btn:
@@ -16,9 +17,9 @@ func on_create():
 	if shop_btn:
 		shop_btn.pressed.connect(_on_shop_pressed)
 		_add_hover(shop_btn)
-	if equip_btn:
-		equip_btn.pressed.connect(_on_equip_pressed)
-		_add_hover(equip_btn)
+	if weapon_btn:
+		weapon_btn.pressed.connect(_on_weapon_pressed)
+		_add_hover(weapon_btn)
 	if start_btn:
 		start_btn.pressed.connect(_on_start_battle_pressed)
 		_add_hover(start_btn)
@@ -59,8 +60,8 @@ func _on_shop_pressed() -> void:
 	UIManager.open_ui("shop", "res://Scenes/ui/shop.tscn")
 
 
-func _on_equip_pressed() -> void:
-	UIManager.open_ui("equipment", "res://Scenes/ui/equipment.tscn")
+func _on_weapon_pressed() -> void:
+	UIManager.open_ui("weapon", "res://Scenes/ui/weapon.tscn")
 
 
 func _on_start_battle_pressed() -> void:

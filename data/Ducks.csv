@@ -1,6 +1,0 @@
-duckID,duckName,healthNum,coin,moveSpeed,texture,spriteFrames
-int,string,float,float,float,string,string
-ID,名字,生命,金币,移动速度,静态图片,动画帧资源
-(默认值行),,,,,,
-1,小黄鸭,5,1,10,duck_fast_1,fast
-2,休闲鸭,10,2,10,duck_fast_2,fast

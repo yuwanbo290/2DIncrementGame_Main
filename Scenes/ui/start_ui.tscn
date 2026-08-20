@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" path="res://Scripts/ui/startui.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://Textures/ui/menu_bg.jpg" id="2_bg"]
-[ext_resource type="Texture2D" path="res://Textures/ui/btn_start.jpg" id="3_btn_start"]
-[ext_resource type="Texture2D" path="res://Textures/ui/btn_start.jpg" id="4_btn_settings"]
-[ext_resource type="Texture2D" path="res://Textures/ui/btn_start.jpg" id="5_btn_exit"]
+[ext_resource type="Texture2D" path="res://Textures/ui/btn_plain.png" id="3_btn_plain"]
+[ext_resource type="Texture2D" path="res://Textures/ui/btn_plain.png" id="4_btn_plain"]
+[ext_resource type="Texture2D" path="res://Textures/ui/btn_plain.png" id="5_btn_plain"]
 [ext_resource type="Texture2D" path="res://Textures/PNG/White/1x/gamepad.png" id="6_icon_game"]
 
 [sub_resource type="StyleBoxFlat" id="6_panel_style"]
@@ -101,8 +101,9 @@ custom_minimum_size = Vector2(0, 15)
 [node name="BtnStart" type="TextureButton" parent="CenterContainer/MainVBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(360, 100)
-texture = ExtResource("3_btn_start")
-stretch_mode = 5
+texture_normal = ExtResource("3_btn_plain")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="BtnStartOverlay" type="VBoxContainer" parent="CenterContainer/MainVBox/BtnStart"]
 layout_mode = 0
@@ -139,8 +140,9 @@ mouse_filter = 2
 [node name="BtnSettings" type="TextureButton" parent="CenterContainer/MainVBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(360, 100)
-texture = ExtResource("4_btn_settings")
-stretch_mode = 5
+texture_normal = ExtResource("4_btn_plain")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="BtnSettingsOverlay" type="VBoxContainer" parent="CenterContainer/MainVBox/BtnSettings"]
 layout_mode = 0
@@ -177,8 +179,9 @@ mouse_filter = 2
 [node name="BtnExit" type="TextureButton" parent="CenterContainer/MainVBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(360, 100)
-texture = ExtResource("5_btn_exit")
-stretch_mode = 5
+texture_normal = ExtResource("5_btn_plain")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="BtnExitOverlay" type="VBoxContainer" parent="CenterContainer/MainVBox/BtnExit"]
 layout_mode = 0

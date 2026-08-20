@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://dn8wlve68kwqw"]
+
+[ext_resource type="Script" uid="uid://d04tnnay5eyuf" path="res://Scripts/core/table_resource.gd" id="1_us38w"]
+
+[resource]
+script = ExtResource("1_us38w")
+table_name = "shop"
+rows = Array[Dictionary]([{
+"Id": 1,
+"costNum": 0,
+"itemType": "weapon",
+"propName": "手枪",
+"purchaseLimit": 1,
+"refId": 1
+}, {
+"Id": 2,
+"costNum": 500,
+"itemType": "weapon",
+"propName": "步枪",
+"purchaseLimit": 1,
+"refId": 2
+}])

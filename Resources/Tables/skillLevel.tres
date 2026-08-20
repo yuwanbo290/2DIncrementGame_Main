@@ -1,153 +1,140 @@
-[gd_resource type="Resource" script_class="TableResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://ce7u18y1geade"]
 
-[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_table"]
+[ext_resource type="Script" uid="uid://d04tnnay5eyuf" path="res://Scripts/core/table_resource.gd" id="1_8djma"]
 
 [resource]
-script = ExtResource("1_table")
+script = ExtResource("1_8djma")
 table_name = "skillLevel"
-rows = Array[Dictionary]([
-	{
-		"Id": 1,
-		"skillLevel": 1,
-		"upCost": 100.0,
-		"changeAttr1": "atk",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 1,
-		"skillLevel": 2,
-		"upCost": 500.0,
-		"changeAttr1": "atk",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 1,
-		"skillLevel": 3,
-		"upCost": 1000.0,
-		"changeAttr1": "atk",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 1,
-		"skillLevel": 4,
-		"upCost": 2000.0,
-		"changeAttr1": "atk",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 1,
-		"skillLevel": 5,
-		"upCost": 5000.0,
-		"changeAttr1": "atk",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 2,
-		"skillLevel": 1,
-		"upCost": 500.0,
-		"changeAttr1": "bulletCount",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 2,
-		"skillLevel": 2,
-		"upCost": 1500.0,
-		"changeAttr1": "bulletCount",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 2,
-		"skillLevel": 3,
-		"upCost": 3000.0,
-		"changeAttr1": "bulletCount",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 3,
-		"skillLevel": 1,
-		"upCost": 1000.0,
-		"changeAttr1": "",
-		"attrValue1": 0.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": "UnlockSuperBullet"
-	},
-	{
-		"Id": 4,
-		"skillLevel": 1,
-		"upCost": 800.0,
-		"changeAttr1": "ricochetCount",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 4,
-		"skillLevel": 2,
-		"upCost": 1600.0,
-		"changeAttr1": "ricochetCount",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	},
-	{
-		"Id": 4,
-		"skillLevel": 3,
-		"upCost": 2400.0,
-		"changeAttr1": "ricochetCount",
-		"attrValue1": 1.0,
-		"changeAttr2": "",
-		"attrValue2": 0.0,
-		"changeAttr3": "",
-		"attrValue3": 0.0,
-		"specialEffect": ""
-	}
-])
+rows = Array[Dictionary]([{
+"Id": 1,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "atk",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 1,
+"specialEffect": "",
+"upCost": 100.0
+}, {
+"Id": 1,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "atk",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 2,
+"specialEffect": "",
+"upCost": 500.0
+}, {
+"Id": 1,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "atk",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 3,
+"specialEffect": "",
+"upCost": 1000.0
+}, {
+"Id": 1,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "atk",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 4,
+"specialEffect": "",
+"upCost": 2000.0
+}, {
+"Id": 1,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "atk",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 5,
+"specialEffect": "",
+"upCost": 5000.0
+}, {
+"Id": 2,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "bulletCount",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 1,
+"specialEffect": "",
+"upCost": 500.0
+}, {
+"Id": 2,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "bulletCount",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 2,
+"specialEffect": "",
+"upCost": 1500.0
+}, {
+"Id": 2,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "bulletCount",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 3,
+"specialEffect": "",
+"upCost": 3000.0
+}, {
+"Id": 3,
+"attrValue1": 0.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 1,
+"specialEffect": "UnlockSuperBullet",
+"upCost": 1000.0
+}, {
+"Id": 4,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "ricochetCount",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 1,
+"specialEffect": "",
+"upCost": 800.0
+}, {
+"Id": 4,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "ricochetCount",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 2,
+"specialEffect": "",
+"upCost": 1600.0
+}, {
+"Id": 4,
+"attrValue1": 1.0,
+"attrValue2": 0.0,
+"attrValue3": 0.0,
+"changeAttr1": "ricochetCount",
+"changeAttr2": "",
+"changeAttr3": "",
+"skillLevel": 3,
+"specialEffect": "",
+"upCost": 2400.0
+}])

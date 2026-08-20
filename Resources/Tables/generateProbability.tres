@@ -1,45 +1,38 @@
-[gd_resource type="Resource" script_class="TableResource" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://ch58hjutyxuwu"]
 
-[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_table"]
+[ext_resource type="Script" uid="uid://d04tnnay5eyuf" path="res://Scripts/core/table_resource.gd" id="1_qbriq"]
 
 [resource]
-script = ExtResource("1_table")
+script = ExtResource("1_qbriq")
 table_name = "generateProbability"
-rows = Array[Dictionary]([
-	{
-		"waveNumber": 1,
-		"duckId": 1,
-		"name": "小黄鸭",
-		"weight": 80
-	},
-	{
-		"waveNumber": 1,
-		"duckId": 2,
-		"name": "休闲鸭",
-		"weight": 20
-	},
-	{
-		"waveNumber": 2,
-		"duckId": 1,
-		"name": "小黄鸭",
-		"weight": 50
-	},
-	{
-		"waveNumber": 2,
-		"duckId": 2,
-		"name": "休闲鸭",
-		"weight": 50
-	},
-	{
-		"waveNumber": 3,
-		"duckId": 1,
-		"name": "小黄鸭",
-		"weight": 20
-	},
-	{
-		"waveNumber": 3,
-		"duckId": 2,
-		"name": "休闲鸭",
-		"weight": 80
-	}
-])
+rows = Array[Dictionary]([{
+"duckId": 1,
+"name": "小黄鸭",
+"waveNumber": 1,
+"weight": 80
+}, {
+"duckId": 2,
+"name": "休闲鸭",
+"waveNumber": 1,
+"weight": 20
+}, {
+"duckId": 1,
+"name": "小黄鸭",
+"waveNumber": 2,
+"weight": 50
+}, {
+"duckId": 2,
+"name": "休闲鸭",
+"waveNumber": 2,
+"weight": 50
+}, {
+"duckId": 1,
+"name": "小黄鸭",
+"waveNumber": 3,
+"weight": 20
+}, {
+"duckId": 2,
+"name": "休闲鸭",
+"waveNumber": 3,
+"weight": 80
+}])

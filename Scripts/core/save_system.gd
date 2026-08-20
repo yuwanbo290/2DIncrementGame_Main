@@ -6,7 +6,7 @@ const SAVE_PATH := "user://save.json"
 const SAVE_VERSION := 2
 const SLOT_COUNT := 3
 
-## 当前存档数据（金币 / 养成等级 / 统计 / 设置）
+## 当前存档数据（金币 / 技能等级 / 统计 / 设置）
 var data: Dictionary = {}
 var current_slot: int = -1  # -1 表示未选择存档
 
@@ -46,10 +46,10 @@ func _empty_slot() -> Dictionary:
 		"last_played": 0,
 		"playtime": 0.0,
 		"gold": 0,
-		"meta_upgrades": {},
-		"stats": {"rounds": 0, "best_kills": 0},
-		"weapon_id": "",
+		"skill_levels": {},
 		"owned_weapons": [],
+		"equipped_weapon": 0,
+		"stats": {"rounds": 0, "best_kills": 0},
 	}
 
 
@@ -74,12 +74,16 @@ func load_save() -> void:
 		var slots: Array = data.get("slots", [])
 		while slots.size() < SLOT_COUNT:
 			slots.append(_empty_slot())
-		# 兼容旧存档：补全缺失的字段
+		# 兼容旧存档：补全缺失字段
 		for i in range(slots.size()):
 			var slot: Dictionary = slots[i]
+			if not slot.has("skill_levels"):
+				slot["skill_levels"] = {}
 			if not slot.has("owned_weapons"):
 				slot["owned_weapons"] = []
-				slots[i] = slot
+			if not slot.has("equipped_weapon"):
+				slot["equipped_weapon"] = 0
+			slots[i] = slot
 		data["slots"] = slots
 		# 确保 settings 存在
 		if not data.has("settings"):
@@ -88,11 +92,10 @@ func load_save() -> void:
 
 func _migrate_v1_to_v2(old: Dictionary) -> void:
 	var new_data: Dictionary = _default_data()
-	# 将旧的金币、升级、统计迁移到第一个存档槽
+	# 将旧的金币、统计迁移到第一个存档槽
 	var slots: Array = new_data["slots"]
 	var slot: Dictionary = slots[0]
 	slot["gold"] = old.get("gold", 0)
-	slot["meta_upgrades"] = old.get("meta_upgrades", {})
 	slot["stats"] = old.get("stats", {"rounds": 0, "best_kills": 0})
 	slot["last_played"] = Time.get_unix_time_from_system()
 	slot["created_at"] = Time.get_unix_time_from_system()
@@ -244,24 +247,63 @@ func add_gold(value: int) -> int:
 	return int(slot["gold"])
 
 
-# ---- 局外养成等级（当前存档）----
-func get_upgrade_level(upgrade_id: String) -> int:
+# ---- 技能等级（当前存档，局外养成）----
+func get_skill_level(skill_id: int) -> int:
 	if current_slot < 0:
 		return 0
 	var slot: Dictionary = get_slot(current_slot)
-	var m: Dictionary = slot.get("meta_upgrades", {})
-	return int(m.get(upgrade_id, 0))
+	var m: Dictionary = slot.get("skill_levels", {})
+	return int(m.get(str(skill_id), 0))
 
 
-func set_upgrade_level(upgrade_id: String, level: int) -> void:
+func set_skill_level(skill_id: int, level: int) -> void:
 	if current_slot < 0:
 		return
 	var slot: Dictionary = get_slot(current_slot)
-	if not slot.has("meta_upgrades"):
-		slot["meta_upgrades"] = {}
-	var m: Dictionary = slot["meta_upgrades"]
-	m[upgrade_id] = level
+	if not slot.has("skill_levels"):
+		slot["skill_levels"] = {}
+	var m: Dictionary = slot["skill_levels"]
+	m[str(skill_id)] = level
 	set_slot(current_slot, slot)
+
+
+# ---- 武器（当前存档，局外永久）----
+## 已购买武器 id 列表（不含表内 isDefault 的默认武器；判断是否可用请走 WeaponService.is_owned）
+func get_owned_weapons() -> Array:
+	if current_slot < 0:
+		return []
+	var slot: Dictionary = get_slot(current_slot)
+	var owned: Array = slot.get("owned_weapons", [])
+	return owned
+
+
+## 记录一把已购买的武器（不落盘，调用方负责 save）
+func add_owned_weapon(weapon_id: int) -> void:
+	if current_slot < 0:
+		return
+	var slot: Dictionary = get_slot(current_slot)
+	var owned: Array = slot.get("owned_weapons", [])
+	for v in owned:
+		if int(v) == weapon_id:
+			return
+	owned.append(weapon_id)
+	slot["owned_weapons"] = owned
+	set_slot(current_slot, slot)
+
+
+## 当前装备的武器 id（0 表示存档未记录；取实际生效武器请走 WeaponService.get_equipped_id）
+func get_equipped_weapon() -> int:
+	if current_slot < 0:
+		return 0
+	var slot: Dictionary = get_slot(current_slot)
+	return int(slot.get("equipped_weapon", 0))
+
+
+## 设置当前装备的武器（不落盘，调用方负责 save）
+func set_equipped_weapon(weapon_id: int) -> void:
+	if current_slot < 0:
+		return
+	update_current_slot("equipped_weapon", weapon_id)
 
 
 # ---- 统计（当前存档）----

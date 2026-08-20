@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://drpg7a768ysgg" path="res://Scripts/ui/settings.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://d3gw5nhodfsci" path="res://Textures/ui/panel_bg.jpg" id="2_bg"]
+[ext_resource type="Texture2D" path="res://Textures/ui/btn_plain.png" id="3_btn"]
 
 [sub_resource type="StyleBoxFlat" id="6_panel_style"]
 bg_color = Color(0.08, 0.1, 0.14, 0.92)
@@ -240,7 +241,9 @@ alignment = 1
 [node name="ResetBtn" type="TextureButton" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow" unique_id=527227605]
 custom_minimum_size = Vector2(180, 56)
 layout_mode = 2
-stretch_mode = 5
+texture_normal = ExtResource("3_btn")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="ResetLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/ResetBtn" unique_id=772749437]
 layout_mode = 0
@@ -257,7 +260,9 @@ vertical_alignment = 1
 [node name="SaveBtn" type="TextureButton" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow" unique_id=905717467]
 custom_minimum_size = Vector2(180, 56)
 layout_mode = 2
-stretch_mode = 5
+texture_normal = ExtResource("3_btn")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="SaveLabel" type="Label" parent="MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/SaveBtn" unique_id=1379094489]
 layout_mode = 0

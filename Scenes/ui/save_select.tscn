@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bwd7g3b6cvcpa" path="res://Scripts/ui/save_select.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://65ihxrjf21jx" path="res://Textures/ui/menu_bg.jpg" id="2_bg"]
+[ext_resource type="Texture2D" path="res://Textures/ui/btn_plain.png" id="3_btn"]
 
 [sub_resource type="StyleBoxFlat" id="6_slot_style"]
 bg_color = Color(0.08, 0.1, 0.14, 0.92)
@@ -43,7 +44,9 @@ theme_override_constants/separation = 15
 [node name="BackBtn" type="TextureButton" parent="TopBar" unique_id=638452027]
 custom_minimum_size = Vector2(110, 48)
 layout_mode = 2
-stretch_mode = 5
+texture_normal = ExtResource("3_btn")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="BackLabel" type="Label" parent="TopBar/BackBtn" unique_id=1923198635]
 layout_mode = 0
@@ -158,7 +161,9 @@ alignment = 1
 [node name="Slot0SelectBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Btns" unique_id=1516627238]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
-stretch_mode = 5
+texture_normal = ExtResource("3_btn")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="Slot0SelectLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Btns/Slot0SelectBtn" unique_id=571120895]
 layout_mode = 0
@@ -175,7 +180,9 @@ vertical_alignment = 1
 [node name="Slot0DeleteBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Btns" unique_id=1675165597]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
-stretch_mode = 5
+texture_normal = ExtResource("3_btn")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="Slot0DeleteLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot0/Slot0Margin/Slot0VBox/Slot0Btns/Slot0DeleteBtn" unique_id=583404566]
 layout_mode = 0
@@ -251,7 +258,9 @@ alignment = 1
 [node name="Slot1SelectBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Btns" unique_id=135286294]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
-stretch_mode = 5
+texture_normal = ExtResource("3_btn")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="Slot1SelectLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Btns/Slot1SelectBtn" unique_id=570971978]
 layout_mode = 0
@@ -268,7 +277,9 @@ vertical_alignment = 1
 [node name="Slot1DeleteBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Btns" unique_id=1600791136]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
-stretch_mode = 5
+texture_normal = ExtResource("3_btn")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="Slot1DeleteLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot1/Slot1Margin/Slot1VBox/Slot1Btns/Slot1DeleteBtn" unique_id=354617979]
 layout_mode = 0
@@ -344,7 +355,9 @@ alignment = 1
 [node name="Slot2SelectBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Btns" unique_id=5439331]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
-stretch_mode = 5
+texture_normal = ExtResource("3_btn")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="Slot2SelectLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Btns/Slot2SelectBtn" unique_id=157633472]
 layout_mode = 0
@@ -361,7 +374,9 @@ vertical_alignment = 1
 [node name="Slot2DeleteBtn" type="TextureButton" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Btns" unique_id=1166102225]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
-stretch_mode = 5
+texture_normal = ExtResource("3_btn")
+ignore_texture_size = true
+stretch_mode = 6
 
 [node name="Slot2DeleteLabel" type="Label" parent="MainContainer/VBox/SlotContainer/Slot2/Slot2Margin/Slot2VBox/Slot2Btns/Slot2DeleteBtn" unique_id=1245503686]
 layout_mode = 0

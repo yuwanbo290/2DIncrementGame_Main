@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://cxlhnpar4vqrk"]
+
+[ext_resource type="Script" uid="uid://d04tnnay5eyuf" path="res://Scripts/core/table_resource.gd" id="1_7kyi5"]
+
+[resource]
+script = ExtResource("1_7kyi5")
+table_name = "weapons"
+rows = Array[Dictionary]([{
+"atk": 1.0,
+"atkSpeed": 1.0,
+"desc": "基础手枪，攻击力低但射速稳定",
+"isDefault": 1,
+"texture": "",
+"weaponId": 1,
+"weaponName": "手枪"
+}, {
+"atk": 2.0,
+"atkSpeed": 0.8,
+"desc": "伤害更高，射速略慢",
+"isDefault": 0,
+"texture": "",
+"weaponId": 2,
+"weaponName": "步枪"
+}])
