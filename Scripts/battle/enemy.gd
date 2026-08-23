@@ -137,6 +137,10 @@ static func _make_circle_polygon(radius: float, segments: int) -> PackedVector2A
 func _update_health_bar() -> void:
 	if _health_bar == null:
 		return
+	# 血条默认隐藏，仅受击（血量不满）时显示
+	var show_bar: bool = health < max_health and health > 0.0
+	_health_bg.visible = show_bar
+	_health_bar.visible = show_bar
 	var ratio: float = clampf(health / max_health, 0.0, 1.0)
 	var w: float = HEALTH_BAR_W * ratio
 	_health_bar.polygon = PackedVector2Array([

@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TableResource" format=3]
+[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://dru5j6qdt1jv"]
 
-[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_omy4f"]
+[ext_resource type="Script" uid="uid://d04tnnay5eyuf" path="res://Scripts/core/table_resource.gd" id="1_omy4f"]
 
 [resource]
 script = ExtResource("1_omy4f")
@@ -117,11 +117,11 @@ rows = Array[Dictionary]([{
 "specialEffect": ""
 }, {
 "Id": 5,
-"attrValue1": 2.0,
+"attrValue1": 1.0,
 "attrValue2": 0.0,
 "attrValue3": 0.0,
 "buffLevel": 1,
-"changeAttr1": "bulletCount",
+"changeAttr1": "burstCount",
 "changeAttr2": "",
 "changeAttr3": "",
 "specialEffect": ""
@@ -131,7 +131,7 @@ rows = Array[Dictionary]([{
 "attrValue2": 0.0,
 "attrValue3": 0.0,
 "buffLevel": 2,
-"changeAttr1": "bulletCount",
+"changeAttr1": "burstCount",
 "changeAttr2": "",
 "changeAttr3": "",
 "specialEffect": ""

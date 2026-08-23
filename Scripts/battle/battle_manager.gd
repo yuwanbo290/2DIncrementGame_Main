@@ -15,32 +15,32 @@ const TABLE_BUFF_LEVEL := "buffLevel"
 ## Buff 与局外技能表都使用 changeAttr1~3 / attrValue1~3，统一由同一个属性入口处理。
 const ATTRIBUTE_SLOT_COUNT := 3
 
-## 每击杀多少只哥布林切换下一阶段（原型：10以内刷1.2.3，10-20刷2.3.4，以此类推）
-const KILLS_PER_STAGE := 10
-## 子弹速度
-const BULLET_SPEED := 640.0
-## 多弹散布半角（弧度）
-const SPREAD_HALF_ANGLE := 0.12
-## 子弹生成点距玩家中心的距离
-const MUZZLE_OFFSET := 26.0
+## 多轮连射的轮间间隔（秒）
+const BURST_INTERVAL := 0.08
 
 var config: BaseConfig
 var _weapon: Dictionary = {}
 var _damage_bonus: float = 0.0
 var _bullet_count: int = 1
 var _ricochet_count: int = 0
+## 每次射击的额外连射轮数（Buff 属性 burstCount）；实际轮数 = 1 + 该值
+var _burst_rounds: int = 0
 
 var _player: BattlePlayer
 var _enemies: Array[Enemy] = []
 var _bullets: Array[Bullet] = []
 
-var _time_left: float = 60.0
+var _time_left: float = 0.0
 var _kills: int = 0
 var _gold: float = 0.0
 var _spawn_timer: float = 0.0
 var _stage: int = 1
 var _max_stage: int = 1
 var _finished: bool = false
+## 本局累计造成的伤害（含暴击放大），结算界面展示
+var _total_damage: float = 0.0
+## 结算弹层是否打开（打开期间场景树暂停）
+var _is_result_open: bool = false
 
 ## 局内 Buff 状态只存在于当前 Battle 场景，不写入 SaveSystem；重新进入战斗会自然归零。
 var _buff_levels: Dictionary = {}
@@ -50,6 +50,7 @@ var _next_buff_trigger_index: int = 0
 var _is_choosing_buff: bool = false
 
 @onready var _buff_choice_ui: BuffChoiceUI = $UI/BuffChoiceUI as BuffChoiceUI
+@onready var _result_ui: BattleResultUI = $UI/BattleResultUI as BattleResultUI
 
 
 func _ready() -> void:
@@ -63,7 +64,8 @@ func _ready() -> void:
 	_weapon = WeaponService.get_equipped_stats()
 	if _weapon.is_empty():
 		push_error("[战斗] 没有可用武器（请先在武器界面装备）")
-		_weapon = {"weaponName": "空手", "atk": 1.0, "atkSpeed": 1.0}
+		# 空手兜底：atk=0 时伤害即玩家基础攻击 base_attack；atkSpeed=1.0 即基础攻速
+		_weapon = {"weaponName": "空手", "atk": 0.0, "atkSpeed": 1.0}
 
 	_load_meta_bonuses()
 	_max_stage = _get_max_stage()
@@ -76,6 +78,10 @@ func _ready() -> void:
 		_buff_choice_ui.buff_selected.connect(_on_buff_selected)
 	else:
 		push_error("[战斗] battle.tscn 缺少 BuffChoiceUI，局内三选一无法显示")
+	if _result_ui:
+		_result_ui.continue_pressed.connect(_on_result_continue)
+	else:
+		push_error("[战斗] battle.tscn 缺少 BattleResultUI，结算界面无法显示")
 
 	# 窗口尺寸变化时玩家与背景跟随（如切换全屏/分辨率）
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
@@ -103,7 +109,7 @@ func _initialize_battle() -> void:
 	add_child(_player)
 	_player.setup(
 		Vector2(view.x / 2.0, view.y - BattlePlayer.MARGIN_BOTTOM),
-		1.0 / float(_weapon.get("atkSpeed", 1.0))
+		1.0 / maxf(config.base_attack_speed * float(_weapon.get("atkSpeed", 1.0)), 0.05)
 	)
 	_player.fire_requested.connect(_on_player_fire)
 	_spawn_enemy()
@@ -128,9 +134,10 @@ func _load_meta_bonuses() -> void:
 				_apply_attribute_slots(lv_row)
 
 
-## 当前单发子弹伤害（武器基础值 + 局外技能 + 本局 Buff）。
+## 当前单发子弹基础伤害 = 玩家基础攻击 + 武器攻击 + 局外技能 + 本局 Buff（叠加模型）。
+## 实际命中伤害还会被暴击放大：射击时按 config.base_crit_rate 判定，命中则 × base_crit_dmg。
 func get_total_damage() -> float:
-	return float(_weapon.get("atk", 1.0)) + _damage_bonus
+	return config.base_attack + float(_weapon.get("atk", 0.0)) + _damage_bonus
 
 
 # ---- 战斗属性统一应用 ----
@@ -156,6 +163,8 @@ func _apply_attribute_change(attr: String, value: float) -> void:
 			_bullet_count += int(value)
 		"ricochetCount":
 			_ricochet_count += int(value)
+		"burstCount":
+			_burst_rounds += int(value)
 		_:
 			push_warning("[战斗] 忽略未支持的属性 key：%s" % attr)
 
@@ -282,6 +291,8 @@ func _describe_buff_level(level_row: Dictionary) -> String:
 				effects.append("每次射击子弹 +%s" % value_text)
 			"ricochetCount":
 				effects.append("边界弹射次数 +%s" % value_text)
+			"burstCount":
+				effects.append("连射轮数 +%s" % value_text)
 			_:
 				effects.append("%s +%s" % [attr, value_text])
 
@@ -341,7 +352,7 @@ func _get_max_stage() -> int:
 
 ## 按击杀数换算当前阶段（10以内=1，10-19=2，20+ 封顶）
 func _stage_from_kills(kills: int) -> int:
-	return clampi(kills / KILLS_PER_STAGE + 1, 1, _max_stage)
+	return clampi(int(kills / float(config.kills_per_stage)) + 1, 1, _max_stage)
 
 
 func _spawn_enemy() -> void:
@@ -384,16 +395,34 @@ func _spawn_enemy() -> void:
 # ---- 射击 ----
 
 func _on_player_fire(dir: Vector2) -> void:
-	var damage: float = get_total_damage()
+	_fire_burst_round(0, dir)
+
+
+## 发射一轮子弹（散射 + 每发独立暴击判定）；随后按 BURST_INTERVAL 顺次发射后续轮次。
+## 一次射击总轮数 = 1 + _burst_rounds（Buff 属性 burstCount 提供的额外轮数）。
+func _fire_burst_round(round_index: int, dir: Vector2) -> void:
 	var count: int = maxi(_bullet_count, 1)
 	for i in count:
-		var offset: float = (float(i) - float(count - 1) / 2.0) * SPREAD_HALF_ANGLE * 2.0
+		# 每发子弹独立判定暴击：命中暴击则本发伤害按暴击倍率放大
+		var damage: float = get_total_damage()
+		var is_crit: bool = randf() < config.base_crit_rate
+		if is_crit:
+			damage *= config.base_crit_dmg
+		var offset: float = (float(i) - float(count - 1) / 2.0) * config.spread_half_angle * 2.0
 		var bullet_dir: Vector2 = dir.rotated(offset)
 		var bullet: Bullet = Bullet.new()
-		bullet.setup(bullet_dir, BULLET_SPEED, damage, _ricochet_count)
-		bullet.position = _player.position + bullet_dir * MUZZLE_OFFSET
+		bullet.setup(bullet_dir, config.bullet_speed, damage, _ricochet_count, is_crit)
+		bullet.position = _player.position + bullet_dir * config.muzzle_offset
 		$World.add_child(bullet)
 		_bullets.append(bullet)
+
+	# 剩余轮次顺次发射（中途战斗结束或场景销毁则停止）
+	var total_rounds: int = maxi(_burst_rounds + 1, 1)
+	if round_index + 1 < total_rounds:
+		await get_tree().create_timer(BURST_INTERVAL).timeout
+		if _finished or not is_instance_valid(self) or not is_inside_tree():
+			return
+		_fire_burst_round(round_index + 1, dir)
 
 
 # ---- 碰撞与击杀 ----
@@ -407,6 +436,14 @@ func _on_enemy_died(enemy: Enemy) -> void:
 
 	# 延迟到当前碰撞循环结束后再打开弹层：同一帧的连续击杀会先全部计数，随后只弹出一次选择。
 	call_deferred("_check_buff_trigger")
+
+
+## 在受击位置生成伤害数字（普通/暴击样式由 DamageNumber 决定）。
+func _spawn_damage_number(world_pos: Vector2, damage: float, is_crit: bool) -> void:
+	var number: DamageNumber = DamageNumber.new()
+	number.setup(damage, is_crit)
+	number.position = world_pos
+	$World.add_child(number)
 
 
 func _process(delta: float) -> void:
@@ -427,6 +464,9 @@ func _process(delta: float) -> void:
 		_finish_round()
 		return
 
+	# 每帧刷新 HUD：倒计时实时显示，最后 10 秒红闪
+	_update_hud()
+
 	# 刷怪计时（初始 spawn_interval 秒）
 	_spawn_timer -= delta
 	if _spawn_timer <= 0.0:
@@ -438,7 +478,6 @@ func _process(delta: float) -> void:
 	var stage: int = _stage_from_kills(_kills)
 	if stage != _stage:
 		_stage = stage
-		_update_hud()
 
 	# 子弹与哥布林碰撞（圆形距离判定）
 	for bullet in _bullets:
@@ -449,6 +488,8 @@ func _process(delta: float) -> void:
 				continue
 			if bullet.position.distance_to(enemy.position) < Bullet.RADIUS + Enemy.BODY_RADIUS:
 				enemy.take_damage(bullet.damage)
+				_total_damage += bullet.damage
+				_spawn_damage_number(enemy.position, bullet.damage, bullet.is_crit)
 				bullet.queue_free()
 				break
 
@@ -477,15 +518,41 @@ func _update_hud() -> void:
 	if wave_label:
 		wave_label.text = "阶段 %d" % _stage
 
+	# 大号居中倒计时：最后 10 秒变红并闪烁（0.5 秒交替）
+	var timer_big: Label = ui.get_node_or_null("BigTimerLabel") as Label
+	if timer_big:
+		var remain: int = ceili(_time_left)
+		timer_big.text = str(remain)
+		if remain <= 10:
+			var blink: bool = fmod(Time.get_ticks_msec() / 1000.0, 0.5) < 0.25
+			timer_big.add_theme_color_override("font_color", Color(1, 0.32, 0.26, 1) if blink else Color(1, 0.82, 0.3, 1))
+			timer_big.add_theme_font_size_override("font_size", 58 if blink else 46)
+		else:
+			timer_big.add_theme_color_override("font_color", Color(1, 0.85, 0.2, 1))
+			timer_big.add_theme_font_size_override("font_size", 46)
+
 
 func _finish_round() -> void:
 	_finished = true
 	_close_buff_choice()
+	# 展示结算弹层并暂停；金币落盘与统计更新延后到玩家点「返回备战」确认时执行
+	if _result_ui:
+		_is_result_open = true
+		_result_ui.show_result(roundi(_total_damage), _kills, int(_gold), _stage)
+		get_tree().paused = true
+
+
+## 结算弹层确认：落盘本局收益与统计，解除暂停并回备战界面。
+func _on_result_continue() -> void:
+	if not _is_result_open:
+		return
+	_is_result_open = false
 	# 结算：局内金币落盘（局外倍率暂为 1.0，原型公式留待配置），统计更新
 	SaveSystem.add_gold(int(_gold))
 	SaveSystem.set_stat("rounds", SaveSystem.get_stat("rounds") + 1)
 	SaveSystem.set_stat("best_kills", maxi(SaveSystem.get_stat("best_kills"), _kills))
 	SaveSystem.save()
+	get_tree().paused = false
 	UIManager.clear_all()
 	get_tree().change_scene_to_file("res://Scenes/ui/preparation.tscn")
 
@@ -494,5 +561,7 @@ func _finish_round() -> void:
 
 ## 正常选择、返回按钮和回合结算都会主动恢复暂停；这里处理编辑器停止或其他外部切场景情况。
 func _exit_tree() -> void:
-	if _is_choosing_buff and get_tree() != null:
+	if get_tree() == null:
+		return
+	if _is_choosing_buff or _is_result_open:
 		get_tree().paused = false

@@ -264,7 +264,7 @@ battle.tscn (Node2D + battle_manager.gd)
 
 ### 10.4 技能系统规范
 - 技能树：`Skill` 表（`Id`/`previouId`/`maxLevel`）定义解锁前置与满级；`skillLevel` 表定义每级消耗与效果（`changeAttr1~3` + `attrValue1~3` + `specialEffect`）。
-- 属性改动用 `changeAttr*` 字符串映射到运行时属性（如 `atk`/`bulletCount`/`ricochetCount`），特殊能力用 `specialEffect` key 分发（如 `UnlockSuperBullet`）。
+- 属性改动用 `changeAttr*` 字符串映射到运行时属性（如 `atk`/`bulletCount`/`ricochetCount`/`burstCount`），特殊能力用 `specialEffect` key 分发（如 `UnlockSuperBullet`）。
 - 局外养成的技能等级存 `skill_levels`（落盘）；局内技能/临时增益不落盘；局外存金币 + 技能等级 + 统计。
 
 ### 10.5 波次 / 生成规范

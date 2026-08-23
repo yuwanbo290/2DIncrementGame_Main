@@ -24,6 +24,8 @@ extends Resource
 @export var spawn_interval: float = 2.0
 ## 每次刷出的哥布林数量
 @export var spawn_per_wave: int = 1
+## 每击杀多少只哥布林切换下一阶段刷怪区间（10以内=1，10-19=2，以此类推）
+@export var kills_per_stage: int = 10
 
 @export_category("Boss")
 ## 触发 Boss 所需的累计击杀数节点
@@ -34,3 +36,11 @@ extends Resource
 @export var buff_trigger_kills: Array[int] = [10, 25, 45]
 ## 每次 3 选 1 的可选数量
 @export var buff_choice_count: int = 3
+
+@export_category("战斗")
+## 子弹飞行速度（像素/秒）
+@export var bullet_speed: float = 640.0
+## 多弹散布半角（弧度）：多弹齐发时单发相对瞄准方向的最大偏移
+@export var spread_half_angle: float = 0.12
+## 子弹生成点距玩家中心的距离（像素）
+@export var muzzle_offset: float = 26.0

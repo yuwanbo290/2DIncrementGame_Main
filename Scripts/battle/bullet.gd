@@ -12,14 +12,17 @@ const MARGIN := 10.0
 var velocity: Vector2 = Vector2.ZERO
 var damage: float = 1.0
 var ricochet_left: int = 0
+## 本发子弹是否暴击（命中时用于伤害数字的独特显示）
+var is_crit: bool = false
 
 var _lifetime: float = 0.0
 
 
-func setup(dir: Vector2, speed: float, dmg: float, ricochet: int) -> void:
+func setup(dir: Vector2, speed: float, dmg: float, ricochet: int, crit: bool = false) -> void:
 	velocity = dir * speed
 	damage = dmg
 	ricochet_left = ricochet
+	is_crit = crit
 	# 黄色圆形色块
 	var body: Polygon2D = Polygon2D.new()
 	var pts: PackedVector2Array = PackedVector2Array()

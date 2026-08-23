@@ -20,6 +20,7 @@ config/icon="res://Textures/ui/goblin_emblem.png"
 UIManager="*res://Scripts/manager/UIManager.gd"
 ConfigSystem="*res://Scripts/core/config_system.gd"
 SaveSystem="*res://Scripts/core/save_system.gd"
+DebugSystem="*res://Scripts/debug/debug_system.gd"
 
 [display]
 
