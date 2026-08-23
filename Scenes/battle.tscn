@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://Scripts/battle/battle_manager.gd" id="1_bm"]
 [ext_resource type="Texture2D" path="res://Textures/ui/btn_plain.png" id="2_btn"]
+[ext_resource type="PackedScene" path="res://Scenes/battle/ui/buff_choice.tscn" id="3_buff_choice"]
 
 [node name="Battle" type="Node2D"]
 script = ExtResource("1_bm")
@@ -101,3 +102,5 @@ theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 16
 text = "按住鼠标左键射击 ｜ 击杀鸭子获得金币 ｜ 时间到自动结算"
 horizontal_alignment = 1
+
+[node name="BuffChoiceUI" parent="UI" instance=ExtResource("3_buff_choice")]

@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="TableResource" format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_w855g"]
+
+[resource]
+script = ExtResource("1_w855g")
+table_name = "Buff"
+rows = Array[Dictionary]([{
+"Id": 1,
+"buffName": "火力强化",
+"desc": "提高每发子弹的伤害",
+"maxLevel": 3,
+"weight": 100
+}, {
+"Id": 2,
+"buffName": "分裂射击",
+"desc": "每次射击额外发射一枚子弹",
+"maxLevel": 3,
+"weight": 80
+}, {
+"Id": 3,
+"buffName": "弹性子弹",
+"desc": "子弹命中屏幕边界后可额外弹射一次",
+"maxLevel": 3,
+"weight": 80
+}, {
+"Id": 4,
+"buffName": "重型弹头",
+"desc": "显著提高子弹伤害，但出现概率较低",
+"maxLevel": 2,
+"weight": 50
+}, {
+"Id": 5,
+"buffName": "弹幕扩容",
+"desc": "一次获得更多子弹数量，出现概率较低",
+"maxLevel": 2,
+"weight": 40
+}])

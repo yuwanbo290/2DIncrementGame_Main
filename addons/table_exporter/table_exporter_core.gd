@@ -161,7 +161,8 @@ static func _find_first_sheet(zip: ZIPReader) -> String:
 		var parser: XMLParser = XMLParser.new()
 		if parser.open_buffer(zip.read_file(XLSX_WORKBOOK)) == OK:
 			while parser.read() == OK:
-				if parser.get_node_type() == XMLParser.NODE_ELEMENT and parser.get_node_name() == "sheet":
+				# OOXML 允许标签带命名空间前缀（例如 x:sheet）；统一取本地名称后再比较。
+				if parser.get_node_type() == XMLParser.NODE_ELEMENT and _xml_local_name(parser.get_node_name()) == "sheet":
 					rel_id = parser.get_named_attribute_value_safe("r:id")
 					break
 
@@ -169,7 +170,7 @@ static func _find_first_sheet(zip: ZIPReader) -> String:
 		var parser: XMLParser = XMLParser.new()
 		if parser.open_buffer(zip.read_file(XLSX_WORKBOOK_RELS)) == OK:
 			while parser.read() == OK:
-				if parser.get_node_type() == XMLParser.NODE_ELEMENT and parser.get_node_name() == "Relationship":
+				if parser.get_node_type() == XMLParser.NODE_ELEMENT and _xml_local_name(parser.get_node_name()) == "Relationship":
 					if parser.get_named_attribute_value_safe("Id") == rel_id:
 						var target: String = parser.get_named_attribute_value_safe("Target")
 						if target != "":
@@ -205,7 +206,7 @@ static func _read_shared_strings(zip: ZIPReader) -> PackedStringArray:
 	while parser.read() == OK:
 		var node_type: int = parser.get_node_type()
 		if node_type == XMLParser.NODE_ELEMENT:
-			var tag: String = parser.get_node_name()
+			var tag: String = _xml_local_name(parser.get_node_name())
 			if tag == "si":
 				in_si = true
 				buf = ""
@@ -220,7 +221,7 @@ static func _read_shared_strings(zip: ZIPReader) -> PackedStringArray:
 			if in_text:
 				buf += parser.get_node_data()
 		elif node_type == XMLParser.NODE_ELEMENT_END:
-			var tag_end: String = parser.get_node_name()
+			var tag_end: String = _xml_local_name(parser.get_node_name())
 			if tag_end == "t":
 				in_text = false
 			elif tag_end == "rPh":
@@ -251,7 +252,7 @@ static func _parse_sheet(bytes: PackedByteArray, shared: PackedStringArray) -> A
 	while parser.read() == OK:
 		var node_type: int = parser.get_node_type()
 		if node_type == XMLParser.NODE_ELEMENT:
-			var tag: String = parser.get_node_name()
+			var tag: String = _xml_local_name(parser.get_node_name())
 			var is_self_closing: bool = parser.is_empty()
 			if tag == "row":
 				var r: String = parser.get_named_attribute_value_safe("r")
@@ -274,7 +275,7 @@ static func _parse_sheet(bytes: PackedByteArray, shared: PackedStringArray) -> A
 			if in_value:
 				value_buf += parser.get_node_data()
 		elif node_type == XMLParser.NODE_ELEMENT_END:
-			var tag_end: String = parser.get_node_name()
+			var tag_end: String = _xml_local_name(parser.get_node_name())
 			if tag_end == "v" or tag_end == "t":
 				in_value = false
 			elif tag_end == "c":
@@ -285,6 +286,15 @@ static func _parse_sheet(bytes: PackedByteArray, shared: PackedStringArray) -> A
 				_put_row(grid, row_number, cur_row)
 				cur_row = []
 	return grid
+
+
+## 返回 XML 标签的本地名称："x:row" -> "row"，"row" 保持不变。
+## 不依赖固定前缀名称，因此兼容 Excel、WPS 与其他符合 OOXML 标准的生成器。
+static func _xml_local_name(qualified_name: String) -> String:
+	var separator_index: int = qualified_name.rfind(":")
+	if separator_index < 0:
+		return qualified_name
+	return qualified_name.substr(separator_index + 1)
 
 
 ## 把单元格原始值按类型标记还原为字符串（s=共享字符串索引，b=布尔）

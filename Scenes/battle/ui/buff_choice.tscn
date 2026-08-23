@@ -1,0 +1,197 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Scripts/battle/ui/buff_choice.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleNormal"]
+bg_color = Color(0.08, 0.14, 0.2, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.38, 0.72, 0.84, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 22.0
+content_margin_top = 22.0
+content_margin_right = 22.0
+content_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxFlat" id="StyleHover"]
+bg_color = Color(0.12, 0.24, 0.3, 0.98)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.85, 0.2, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 21.0
+content_margin_top = 21.0
+content_margin_right = 21.0
+content_margin_bottom = 21.0
+
+[sub_resource type="StyleBoxFlat" id="StylePressed"]
+bg_color = Color(0.08, 0.34, 0.26, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.45, 1, 0.65, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 21.0
+content_margin_top = 21.0
+content_margin_right = 21.0
+content_margin_bottom = 21.0
+
+[sub_resource type="StyleBoxFlat" id="StyleFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 1, 1, 0.85)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="BuffChoiceUI" type="Control"]
+process_mode = 3
+z_index = 100
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_script")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.72)
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 36
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 36
+
+[node name="Center" type="CenterContainer" parent="SafeMargin"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Content" type="VBoxContainer" parent="SafeMargin/Center"]
+custom_minimum_size = Vector2(920, 410)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="SafeMargin/Center/Content"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "选择一项局内升级"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="SafeMargin/Center/Content"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.85, 0.92, 0.96, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 17
+text = "战斗已暂停 · 选择后立即生效"
+horizontal_alignment = 1
+
+[node name="Choices" type="HBoxContainer" parent="SafeMargin/Center/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="Choice0" type="Button" parent="SafeMargin/Center/Content/Choices"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_neighbor_right = NodePath("../Choice1")
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleNormal")
+theme_override_styles/hover = SubResource("StyleHover")
+theme_override_styles/pressed = SubResource("StylePressed")
+theme_override_styles/focus = SubResource("StyleFocus")
+text = "升级选项 1"
+alignment = 1
+autowrap_mode = 3
+
+[node name="Choice1" type="Button" parent="SafeMargin/Center/Content/Choices"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../Choice0")
+focus_neighbor_right = NodePath("../Choice2")
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleNormal")
+theme_override_styles/hover = SubResource("StyleHover")
+theme_override_styles/pressed = SubResource("StylePressed")
+theme_override_styles/focus = SubResource("StyleFocus")
+text = "升级选项 2"
+alignment = 1
+autowrap_mode = 3
+
+[node name="Choice2" type="Button" parent="SafeMargin/Center/Content/Choices"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../Choice1")
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleNormal")
+theme_override_styles/hover = SubResource("StyleHover")
+theme_override_styles/pressed = SubResource("StylePressed")
+theme_override_styles/focus = SubResource("StyleFocus")
+text = "升级选项 3"
+alignment = 1
+autowrap_mode = 3

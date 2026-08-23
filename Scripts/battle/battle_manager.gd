@@ -2,13 +2,18 @@ extends Node2D
 ## 战斗管理器：核心战斗循环（色块占位实现）。
 ## 流程：读配置/武器/技能加成 → 定时按 generateProbability 表加权刷鸭 → 玩家按住左键射击 →
 ## 命中扣血、击杀得金币 → 击杀数切换波次（原型：10以内波1 / 10-20波2 / 20+波3，取表内 waveNumber）→
-## 时间耗尽结算落盘 → 回备战界面。
-## 3选1 Buff 与 Boss 暂未实现（用户明确先不做）。
+## 达到配置的击杀节点时暂停战斗并进行局内 Buff 三选一 → 时间耗尽结算落盘 → 回备战界面。
+## Boss 暂未实现。
 
 
 ## 表名
 const TABLE_SPAWN := "generateProbability"
 const TABLE_DUCKS := "Ducks"
+const TABLE_BUFF := "Buff"
+const TABLE_BUFF_LEVEL := "buffLevel"
+
+## Buff 与局外技能表都使用 changeAttr1~3 / attrValue1~3，统一由同一个属性入口处理。
+const ATTRIBUTE_SLOT_COUNT := 3
 
 ## 每击杀多少只鸭子切换下一阶段（原型：10以内刷1.2.3，10-20刷2.3.4，以此类推）
 const KILLS_PER_STAGE := 10
@@ -37,6 +42,15 @@ var _stage: int = 1
 var _max_stage: int = 1
 var _finished: bool = false
 
+## 局内 Buff 状态只存在于当前 Battle 场景，不写入 SaveSystem；重新进入战斗会自然归零。
+var _buff_levels: Dictionary = {}
+## 指向 config.buff_trigger_kills 中下一个尚未处理的触发节点。
+var _next_buff_trigger_index: int = 0
+## 弹层打开期间阻止重复触发和快速重复选择。
+var _is_choosing_buff: bool = false
+
+@onready var _buff_choice_ui: BuffChoiceUI = $UI/BuffChoiceUI as BuffChoiceUI
+
 
 func _ready() -> void:
 	config = ConfigSystem.config
@@ -58,6 +72,10 @@ func _ready() -> void:
 	var back_btn: TextureButton = $UI/TopBar/BackBtn as TextureButton
 	if back_btn:
 		back_btn.pressed.connect(_on_back_pressed)
+	if _buff_choice_ui:
+		_buff_choice_ui.buff_selected.connect(_on_buff_selected)
+	else:
+		push_error("[战斗] battle.tscn 缺少 BuffChoiceUI，局内三选一无法显示")
 
 	# 窗口尺寸变化时玩家与背景跟随（如切换全屏/分辨率）
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
@@ -93,6 +111,7 @@ func _initialize_battle() -> void:
 
 func _on_back_pressed() -> void:
 	_finished = true
+	_close_buff_choice()
 	UIManager.clear_all()
 	get_tree().change_scene_to_file("res://Scenes/ui/preparation.tscn")
 
@@ -106,23 +125,209 @@ func _load_meta_bonuses() -> void:
 			continue
 		for lv_row in TableDB.get_all("skillLevel", "Id", skill_id):
 			if int(lv_row.get("skillLevel", 0)) <= level:
-				for i in range(1, 4):
-					var attr: String = str(lv_row.get("changeAttr%d" % i, ""))
-					var value: float = float(lv_row.get("attrValue%d" % i, 0.0))
-					match attr:
-						"atk":
-							_damage_bonus += value
-						"bulletCount":
-							_bullet_count += int(value)
-						"ricochetCount":
-							_ricochet_count += int(value)
-						_:
-							pass  # 未识别的属性 key 忽略（specialEffect 等暂不处理）
+				_apply_attribute_slots(lv_row)
 
 
-## 当前武器的每秒伤害（含技能加成）
+## 当前单发子弹伤害（武器基础值 + 局外技能 + 本局 Buff）。
 func get_total_damage() -> float:
 	return float(_weapon.get("atk", 1.0)) + _damage_bonus
+
+
+# ---- 战斗属性统一应用 ----
+
+## 读取一行配置中固定的三组属性字段。
+## 局外 skillLevel 与局内 buffLevel 共用此入口，确保同一个属性 key 在两套系统中含义一致。
+func _apply_attribute_slots(level_row: Dictionary) -> void:
+	for index in range(1, ATTRIBUTE_SLOT_COUNT + 1):
+		var attr: String = str(level_row.get("changeAttr%d" % index, ""))
+		var value: float = float(level_row.get("attrValue%d" % index, 0.0))
+		_apply_attribute_change(attr, value)
+
+
+## 首版只开放战斗当前已经完整支持的三种属性。
+## 未识别 key 会给出警告但不会阻断战斗，便于发现表格拼写错误。
+func _apply_attribute_change(attr: String, value: float) -> void:
+	match attr:
+		"":
+			pass
+		"atk":
+			_damage_bonus += value
+		"bulletCount":
+			_bullet_count += int(value)
+		"ricochetCount":
+			_ricochet_count += int(value)
+		_:
+			push_warning("[战斗] 忽略未支持的属性 key：%s" % attr)
+
+
+# ---- 局内 Buff：触发与候选抽取 ----
+
+## 检查当前击杀数是否到达下一个三选一节点。
+##
+## 使用 >= 而不是 ==，可以兼容同一帧连续击杀跨过阈值的情况。
+## 使用 while，可以在一次选择结束后继续补处理已经跨过的后续阈值。
+func _check_buff_trigger() -> void:
+	if _finished or _is_choosing_buff or config == null or _buff_choice_ui == null:
+		return
+
+	var trigger_kills: Array[int] = config.buff_trigger_kills
+	while _next_buff_trigger_index < trigger_kills.size():
+		var threshold: int = trigger_kills[_next_buff_trigger_index]
+		if _kills < threshold:
+			return
+
+		var choice_count: int = mini(config.buff_choice_count, BuffChoiceUI.CHOICE_CAPACITY)
+		var picked_rows: Array[Dictionary] = _roll_buff_choices(choice_count)
+		# 当前阈值已完成检查；即使候选池为空也要前进，避免每次击杀都重复尝试同一节点。
+		_next_buff_trigger_index += 1
+		if picked_rows.is_empty():
+			push_warning("[战斗] 击杀节点 %d 没有可用 Buff，已跳过本次三选一" % threshold)
+			continue
+
+		var display_choices: Array[Dictionary] = []
+		for buff_row in picked_rows:
+			display_choices.append(_build_buff_choice_data(buff_row))
+
+		# 先设置互斥标记并完成界面数据刷新，再暂停场景树。
+		# BuffChoiceUI 使用 PROCESS_MODE_ALWAYS，因此暂停后按钮仍能响应。
+		_is_choosing_buff = true
+		_buff_choice_ui.show_choices(display_choices)
+		get_tree().paused = true
+		return
+
+
+## 从所有“未满级且存在下一级配置”的 Buff 中加权抽取，且同一次三选一不重复。
+## 候选池是新数组，只删除池内引用，不会修改 TableDB 缓存中的原始 rows。
+func _roll_buff_choices(choice_count: int) -> Array[Dictionary]:
+	var pool: Array[Dictionary] = []
+	for buff_row in TableDB.rows_of(TABLE_BUFF):
+		var buff_id: int = int(buff_row.get("Id", 0))
+		var current_level: int = int(_buff_levels.get(buff_id, 0))
+		var max_level: int = int(buff_row.get("maxLevel", 0))
+		if buff_id <= 0 or current_level >= max_level:
+			continue
+		if _get_buff_level_row(buff_id, current_level + 1).is_empty():
+			push_warning(
+				"[战斗] Buff Id=%d 缺少 buffLevel=%d，已从候选池排除"
+				% [buff_id, current_level + 1]
+			)
+			continue
+		pool.append(buff_row)
+
+	var choices: Array[Dictionary] = []
+	var draw_count: int = mini(maxi(choice_count, 0), pool.size())
+	for _draw_index in draw_count:
+		var picked_index: int = _pick_weighted_buff_index(pool)
+		choices.append(pool[picked_index])
+		pool.remove_at(picked_index)
+	return choices
+
+
+## 使用与刷怪表相同的“总权重减随机值”方式选出一项。
+## 当所有权重都小于等于 0 时回退为等概率随机，避免错误配置造成除零问题。
+func _pick_weighted_buff_index(pool: Array[Dictionary]) -> int:
+	var total_weight: int = 0
+	for buff_row in pool:
+		total_weight += maxi(int(buff_row.get("weight", 1)), 0)
+
+	if total_weight <= 0:
+		return randi() % pool.size()
+
+	var roll: int = randi() % total_weight
+	for index in pool.size():
+		roll -= maxi(int(pool[index].get("weight", 1)), 0)
+		if roll < 0:
+			return index
+	return pool.size() - 1
+
+
+# ---- 局内 Buff：等级查询与界面数据 ----
+
+## buffLevel 允许同一 Id 有多行，因此先按 Id 取全部，再精确匹配本次要获得的等级。
+func _get_buff_level_row(buff_id: int, level: int) -> Dictionary:
+	for level_row in TableDB.get_all(TABLE_BUFF_LEVEL, "Id", buff_id):
+		if int(level_row.get("buffLevel", 0)) == level:
+			return level_row
+	return {}
+
+
+## 将表格行转换成 UI 所需的只读显示数据；UI 不直接依赖 TableDB 或局内状态。
+func _build_buff_choice_data(buff_row: Dictionary) -> Dictionary:
+	var buff_id: int = int(buff_row.get("Id", 0))
+	var next_level: int = int(_buff_levels.get(buff_id, 0)) + 1
+	var level_row: Dictionary = _get_buff_level_row(buff_id, next_level)
+	return {
+		"id": buff_id,
+		"name": str(buff_row.get("buffName", "未知升级")),
+		"description": str(buff_row.get("desc", "")),
+		"next_level": next_level,
+		"max_level": int(buff_row.get("maxLevel", next_level)),
+		"effect_text": _describe_buff_level(level_row),
+	}
+
+
+## 把属性 key 转为玩家可读的本级效果文字。
+func _describe_buff_level(level_row: Dictionary) -> String:
+	var effects: Array[String] = []
+	for index in range(1, ATTRIBUTE_SLOT_COUNT + 1):
+		var attr: String = str(level_row.get("changeAttr%d" % index, ""))
+		var value: float = float(level_row.get("attrValue%d" % index, 0.0))
+		if attr == "":
+			continue
+		var value_text: String = str(int(value)) if is_equal_approx(value, roundf(value)) else "%.2f" % value
+		match attr:
+			"atk":
+				effects.append("伤害 +%s" % value_text)
+			"bulletCount":
+				effects.append("每次射击子弹 +%s" % value_text)
+			"ricochetCount":
+				effects.append("边界弹射次数 +%s" % value_text)
+			_:
+				effects.append("%s +%s" % [attr, value_text])
+
+	if effects.is_empty():
+		return "本级没有普通属性变化"
+	return "本级效果：%s" % "；".join(effects)
+
+
+# ---- 局内 Buff：选择、生效与暂停恢复 ----
+
+func _on_buff_selected(buff_id: int) -> void:
+	if not _is_choosing_buff:
+		return
+
+	_apply_next_buff_level(buff_id)
+	_close_buff_choice()
+
+	# 如果同一帧多击杀已经跨过下一个阈值，恢复战斗后继续补弹下一次选择。
+	call_deferred("_check_buff_trigger")
+
+
+## 只应用“当前等级 + 1”这一行，避免重复叠加已经获得过的旧等级效果。
+func _apply_next_buff_level(buff_id: int) -> bool:
+	var current_level: int = int(_buff_levels.get(buff_id, 0))
+	var next_level: int = current_level + 1
+	var level_row: Dictionary = _get_buff_level_row(buff_id, next_level)
+	if level_row.is_empty():
+		push_warning("[战斗] 无法应用 Buff Id=%d：缺少 buffLevel=%d" % [buff_id, next_level])
+		return false
+
+	_apply_attribute_slots(level_row)
+	var special_effect: String = str(level_row.get("specialEffect", ""))
+	if special_effect != "":
+		push_warning("[战斗] Buff 特殊效果尚未支持，已忽略：%s" % special_effect)
+
+	_buff_levels[buff_id] = next_level
+	return true
+
+
+## 关闭弹层并解除暂停。所有离开战斗的路径也调用此方法，防止下一场景保持暂停。
+func _close_buff_choice() -> void:
+	if _buff_choice_ui != null:
+		_buff_choice_ui.hide_choices()
+	_is_choosing_buff = false
+	if get_tree() != null:
+		get_tree().paused = false
 
 
 # ---- 刷怪 ----
@@ -200,6 +405,9 @@ func _on_enemy_died(enemy: Enemy) -> void:
 	_update_hud()
 	enemy.queue_free()
 
+	# 延迟到当前碰撞循环结束后再打开弹层：同一帧的连续击杀会先全部计数，随后只弹出一次选择。
+	call_deferred("_check_buff_trigger")
+
 
 func _process(delta: float) -> void:
 	if _finished:
@@ -272,6 +480,7 @@ func _update_hud() -> void:
 
 func _finish_round() -> void:
 	_finished = true
+	_close_buff_choice()
 	# 结算：局内金币落盘（局外倍率暂为 1.0，原型公式留待配置），统计更新
 	SaveSystem.add_gold(int(_gold))
 	SaveSystem.set_stat("rounds", SaveSystem.get_stat("rounds") + 1)
@@ -279,3 +488,11 @@ func _finish_round() -> void:
 	SaveSystem.save()
 	UIManager.clear_all()
 	get_tree().change_scene_to_file("res://Scenes/ui/preparation.tscn")
+
+
+# ---- 场景退出兜底 ----
+
+## 正常选择、返回按钮和回合结算都会主动恢复暂停；这里处理编辑器停止或其他外部切场景情况。
+func _exit_tree() -> void:
+	if _is_choosing_buff and get_tree() != null:
+		get_tree().paused = false

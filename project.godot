@@ -26,6 +26,10 @@ SaveSystem="*res://Scripts/core/save_system.gd"
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[dotnet]
+
+project/assembly_name="2D_IncrementGame_main"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/table_exporter/plugin.cfg")
