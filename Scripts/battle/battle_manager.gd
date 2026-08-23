@@ -1,6 +1,6 @@
 extends Node2D
 ## 战斗管理器：核心战斗循环（色块占位实现）。
-## 流程：读配置/武器/技能加成 → 定时按 generateProbability 表加权刷鸭 → 玩家按住左键射击 →
+## 流程：读配置/武器/技能加成 → 定时按 generateProbability 表加权刷哥布林 → 玩家按住左键射击 →
 ## 命中扣血、击杀得金币 → 击杀数切换波次（原型：10以内波1 / 10-20波2 / 20+波3，取表内 waveNumber）→
 ## 达到配置的击杀节点时暂停战斗并进行局内 Buff 三选一 → 时间耗尽结算落盘 → 回备战界面。
 ## Boss 暂未实现。
@@ -8,14 +8,14 @@ extends Node2D
 
 ## 表名
 const TABLE_SPAWN := "generateProbability"
-const TABLE_DUCKS := "Ducks"
+const TABLE_GOBLINS := "Goblins"
 const TABLE_BUFF := "Buff"
 const TABLE_BUFF_LEVEL := "buffLevel"
 
 ## Buff 与局外技能表都使用 changeAttr1~3 / attrValue1~3，统一由同一个属性入口处理。
 const ATTRIBUTE_SLOT_COUNT := 3
 
-## 每击杀多少只鸭子切换下一阶段（原型：10以内刷1.2.3，10-20刷2.3.4，以此类推）
+## 每击杀多少只哥布林切换下一阶段（原型：10以内刷1.2.3，10-20刷2.3.4，以此类推）
 const KILLS_PER_STAGE := 10
 ## 子弹速度
 const BULLET_SPEED := 640.0
@@ -354,7 +354,7 @@ func _spawn_enemy() -> void:
 	if candidates.is_empty():
 		return
 
-	# 加权随机选择鸭子 id
+	# 加权随机选择哥布林 id
 	var roll: int = randi() % maxi(total_weight, 1)
 	var pick: Dictionary = candidates[0]
 	for row in candidates:
@@ -363,13 +363,13 @@ func _spawn_enemy() -> void:
 			pick = row
 			break
 
-	var duck_row: Dictionary = TableDB.get_first(TABLE_DUCKS, "duckID", int(pick.get("duckId", 1)))
-	if duck_row.is_empty():
-		push_warning("[战斗] Ducks 表缺少 duckID=%d" % int(pick.get("duckId", 0)))
+	var goblin_row: Dictionary = TableDB.get_first(TABLE_GOBLINS, "goblinID", int(pick.get("goblinId", 1)))
+	if goblin_row.is_empty():
+		push_warning("[战斗] Goblins 表缺少 goblinID=%d" % int(pick.get("goblinId", 0)))
 		return
 
 	var enemy: Enemy = Enemy.new()
-	enemy.setup(duck_row)
+	enemy.setup(goblin_row)
 	# 生成位置：屏幕内随机（避开底部玩家区域）
 	var view: Vector2 = get_viewport_rect().size if get_viewport() != null else Vector2(1920, 1080)
 	enemy.position = Vector2(
@@ -440,7 +440,7 @@ func _process(delta: float) -> void:
 		_stage = stage
 		_update_hud()
 
-	# 子弹与鸭子碰撞（圆形距离判定）
+	# 子弹与哥布林碰撞（圆形距离判定）
 	for bullet in _bullets:
 		if not is_instance_valid(bullet):
 			continue

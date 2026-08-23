@@ -9,10 +9,10 @@
 
 ## 一、项目定位与核心玩法（所有开发必须围绕此展开）
 
-- **游戏类型**：2D 俯视角（Top-down）像素风增量射击游戏（打鸭子）。
+- **游戏类型**：2D 俯视角（Top-down）像素风增量射击游戏（讨伐哥布林）。
 - **核心循环**：
   ```
-  单局战斗（打鸭子得金币）
+  单局战斗（击败哥布林得金币）
     → 用金币强化实力（技能 / 养成，待用户提供表结构后实现）
     → 变强
     → 进入下一局打出更高收益
@@ -43,7 +43,7 @@
 - **TextureButton 没有 `texture` 属性**（.tscn 与脚本都没有）。设底图必须用 `texture_normal`，写 `texture = ...` 会被 Godot 静默丢弃、按钮底图永不显示。
 - **TextureButton 必须同时设 `ignore_texture_size = true`**：底图 `btn_plain.png` 为 2240×692，不忽略原图尺寸会把按钮最小尺寸撑到原图大小、直接破坏布局。忽略后由 `custom_minimum_size` 决定尺寸，且**必须显式设 `stretch_mode = STRETCH_KEEP_ASPECT_COVERED`**——Godot 4.7 的 TextureButton 默认 `stretch_mode = STRETCH_KEEP`（按原始像素绘制），不显式设置时 2240 宽的底图会直接溢出按钮、盖住半个界面。
 - 动态创建按钮统一调 `UIBase._create_text_button()`，不要手搓（该方法已含上述两项）。
-- 禁止用 ColorRect 当 UI 背景（用 `TextureRect + menu_bg.jpg`）。
+- 禁止用 ColorRect 当 UI 背景（用 `TextureRect + menu_bg.png`）。
 
 ---
 
@@ -67,9 +67,9 @@
 │   └── Config/                   # base_config.tres 等基础配置资源
 ├── data/                         # 源表 .xlsx（策划维护，AI 不手改 .tres）
 ├── Textures/
-│   ├── ui/                       # UI 纹理（menu_bg / panel_bg / btn_* / icon_*）
+│   ├── ui/                       # UI 纹理（menu_bg / btn_* / icon_* / goblin_emblem）
 │   ├── PNG/                      # 通用像素图标素材库（勿乱放，仅供素材）
-│   ├── ducks/                    # [未来] 鸭子/敌人纹理与 SpriteFrames
+│   ├── goblins/                  # [未来] 哥布林敌人纹理与 SpriteFrames
 │   └── weapons/                  # [未来] 武器/子弹纹理
 ├── Audio/                        # [未来] 音频（music/ sfx/）
 └── addons/table_exporter/        # 导表插件（勿改，除非用户要求）
@@ -100,10 +100,10 @@
 - **回调函数**：统一 `_on_<对象>_<事件>`（`_on_back_pressed`）。
 
 ### 4.3 数据表字段命名（重要）
-- **用户提供的表**（`Ducks`/`Skill`/`generateProbability`/`skillLevel`/`shop`/`weapons`）：字段名**以用户原表为准，禁止擅自改名**。
+- **用户提供的表**（`Goblins`/`Skill`/`generateProbability`/`skillLevel`/`shop`/`weapons`/`Buff`/`buffLevel`）：字段名**以用户原表为准，禁止擅自改名**。
 - **未来 AI 新增的表**：字段名**必须 snake_case**（`fire_rate`、`base_cost`），表名 snake_case 小写。
-- **表名与 CSV 文件名一致**：`<表名>.csv` ↔ 表名 `<表名>` ↔ `<表名>.tres`。
-- 若未来用户要求统一既有 4 张表字段命名，须由用户拍板后批量同步 CSV / .tres / 引用代码，一次性完成，不留半迁移状态。
+- **表名与源文件名一致**：`<表名>.xlsx` ↔ 表名 `<表名>` ↔ `<表名>.tres`（CSV 仅为兼容输入）。
+- 若未来用户要求统一既有 8 张表字段命名，须由用户拍板后批量同步 xlsx / .tres / 引用代码，一次性完成，不留半迁移状态。
 
 ### 4.4 场景节点命名
 - 节点名 PascalCase（`TopBar`、`GoldLabel`、`BackBtn`、`MainContainer`）。
@@ -177,8 +177,8 @@ core ← manager ← ui
 
 ### 7.2 运行时查询（统一走 TableDB）
 ```gdscript
-var ducks: Array[Dictionary] = TableDB.rows_of("Ducks")
-var duck: Dictionary = TableDB.get_first("Ducks", "duckID", 1)
+var goblins: Array[Dictionary] = TableDB.rows_of("Goblins")
+var goblin: Dictionary = TableDB.get_first("Goblins", "goblinID", 1)
 var levels: Array[Dictionary] = TableDB.get_all("skillLevel", "Id", 1)
 ```
 - 查询结果为空返回 `[]` / `{}`，**调用方必须判空**（`row.is_empty()`）。
@@ -186,7 +186,7 @@ var levels: Array[Dictionary] = TableDB.get_all("skillLevel", "Id", 1)
 
 ### 7.3 数据源一致性
 - **一张表 = 一个源表（.xlsx）+ 一个 .tres**，二者必须同时存在。
-- 当前 6 张表（Ducks / Skill / generateProbability / skillLevel / shop / weapons）均为 xlsx 源，已对齐。
+- 当前 8 张表（Goblins / Skill / generateProbability / skillLevel / shop / weapons / Buff / buffLevel）均为 xlsx 源，已对齐。
 - 新增表时：先建 xlsx → 导表 → 在 `接口文档.md` 登记表结构 → 再写查询代码。
 
 ---
@@ -205,13 +205,14 @@ on_destroy()  销毁：清理动态创建的子节点（覆盖需调 super()）
 - **UI 导航必须通过 UIManager**（`open_ui`/`close_ui`），战斗场景除外（用 `change_scene_to_file`）。
 
 ### 8.2 像素风 UI 规范（统一标准）
-- 背景：`TextureRect + menu_bg.jpg`（禁用 ColorRect）。
+- 背景：`TextureRect + menu_bg.png`（禁用 ColorRect）。
 - 布局：`TopBar`（高 60）+ `MainContainer`（margin 80/20/80/40 + `offset_top=60`）；主菜单 start_ui 例外用 CenterContainer 居中。
 - 标题：黄色 `(1, 0.85, 0.2)` + 黑色描边 `outline_size=4` + 字号 36。
 - 按钮：`TextureButton` + `Label` 文字标识；底图用 `texture_normal = btn_plain.png`，**且必须同时设** `ignore_texture_size = true` **和** `stretch_mode = 6`（KEEP_ASPECT_COVERED，等比铺满不溢出）；**子节点 `mouse_filter=2`**（否则拦截点击）。
 - 面板：`StyleBoxFlat` 深色背景 `(0.08, 0.1, 0.14, 0.92)` + 边框 + 圆角 8。
 - hover：所有按钮调 `_add_hover(btn)`（正常态 modulate=1.15，hover 1.3）。
-- 资源路径：`Textures/ui/`，命名 `menu_bg.jpg` / `btn_plain.png` / `icon_coin.jpg`。\n- **`btn_plain.png` 素材说明**：由旧素材 `btn_start.jpg` 的中央绿色渐变区（y452-1144）裁切生成，已清除素材自带水印文字与上下白色留白（旧素材直接拉伸会显示成"白边+绿杠"）。需要更换按钮观感时直接替换此文件即可，不要用带文字的素材当按钮底图。
+- 资源路径：`Textures/ui/`，命名 `menu_bg.png` / `btn_plain.png` / `goblin_emblem.png` / `icon_coin.jpg`。
+- **`btn_plain.png` 素材说明**：当前为无文字的苔绿木石按钮底图，可复用于所有按钮；按钮文字必须由 Label 渲染，不得写死在纹理内。
 
 ### 8.3 动态构建 UI（列表类界面）
 - 用 UIBase 公共方法 `_create_list_row` / `_clear_container` / `_refresh_gold_label`，**禁止重复造轮子**。
@@ -239,7 +240,7 @@ on_destroy()  销毁：清理动态创建的子节点（覆盖需调 super()）
 
 ## 十、战斗系统开发规范（增量游戏核心，未来开发重点）
 
-> 战斗场景已实现核心玩法（射击/刷怪/金币/结算，色块占位贴图，Buff 与 Boss 待做）。以下为架构约定与后续待办。
+> 战斗场景已实现核心玩法（射击/刷怪/金币/结算与局内 Buff 三选一，敌人仍为代码绘制占位造型，Boss 待做）。以下为架构约定与后续待办。
 
 ### 10.1 场景结构约定
 ```
@@ -251,8 +252,8 @@ battle.tscn (Node2D + battle_manager.gd)
 - 战斗逻辑脚本放 `Scripts/battle/`，场景放 `Scenes/battle/`。
 - 敌人、子弹、掉落物各自独立脚本 + 独立场景，由管理器统一 spawn/管理。
 
-### 10.2 鸭子（敌人）规范
-- 属性从 `Ducks` 表读：`duckID`/`healthNum`/`coin`/`moveSpeed`/`texture`/`spriteFrames`。
+### 10.2 哥布林（敌人）规范
+- 属性从 `Goblins` 表读：`goblinID`/`goblinName`/`healthNum`/`coin`/`moveSpeed`/`texture`/`spriteFrames`。
 - 敌人节点统一挂 `enemy.gd`，实例化后注入表行数据（**不硬编码数值**）。
 - 死亡：给金币（`coin` 字段），累加击杀统计（`SaveSystem.set_stat("best_kills", ...)`），局内计数，局结束落盘。
 
@@ -267,7 +268,7 @@ battle.tscn (Node2D + battle_manager.gd)
 - 局外养成的技能等级存 `skill_levels`（落盘）；局内技能/临时增益不落盘；局外存金币 + 技能等级 + 统计。
 
 ### 10.5 波次 / 生成规范
-- 按 `generateProbability` 表（`waveNumber`/`duckId`/`weight`）做加权随机刷怪。
+- 按 `generateProbability` 表（`waveNumber`/`goblinId`/`weight`）做加权随机刷怪。
 - 刷怪节奏用 `base_config` 的 `spawn_interval` / `spawn_per_wave`；单局时长 `round_time`。
 - Boss 触发节点用 `base_config.boss_nodes`（累计击杀数）。
 
@@ -358,15 +359,15 @@ battle.tscn (Node2D + battle_manager.gd)
 
 ### 15.1 建议整改（P1，需用户确认）
 1. **文件命名统一**：`Gamemanager.gd` → `game_manager.gd`，`startui.gd` → `start_ui.gd`（同步改 autoload/脚本引用）。
-2. **表字段命名统一**：用户表字段为 camelCase/PascalCase（`duckID`/`Id`/`maxLevel`）。建议由用户决定是否统一，统一时一次性迁移源表 + .tres + 引用代码。
+2. **表字段命名统一**：用户表字段为 camelCase/PascalCase（`goblinID`/`Id`/`maxLevel`）。建议由用户决定是否统一，统一时一次性迁移源表 + .tres + 引用代码。
 3. **`confirm_dialog.gd` 重复 `_add_hover`**：与 UIBase 重复，可复用 UIBase 版本（需确认 ConfirmDialog 不继承 UIBase 的原因）。
 
 ### 15.2 待补（P2，随功能开发补齐）
-5. **核心战斗未实现**：`battle.tscn` 为占位，鸭子/技能/波次/Boss/局内 Buff 均待开发（按第十章规范，需先拿到表结构）。
+5. **关卡与 Boss 待实现**：核心射击、哥布林刷怪和局内 Buff 已完成；正式关卡波数、击杀门槛与关底 Boss 仍需在设计确认后开发。
 6. **商店/武器系统**：已基于 `shop` / `weapons` 表实现（购买 + 装备，落盘 `owned_weapons`/`equipped_weapon`）；数值待用户配置。
-7. **鸭子美术资源缺失**：`Ducks.csv` 引用 `duck_fast_1`/`duck_fast_2`/`fast`，但 `Textures/` 无对应资源，需用户提供或临时占位。
+7. **哥布林正式美术资源缺失**：`Goblins.xlsx` 已预留 `goblin_scout_1`/`goblin_warrior_1`/`fast` 资源键，当前敌人仍使用代码绘制的尖耳色块占位造型。
 8. **音频缺失**：设置页有音量 + AudioServer 引用 Master/Music/SFX 总线，但 `Audio/` 无音频文件。
-9. **版本控制**：`.gitignore` 已备但 `.git` 未初始化，建议 `git init` 建立基线。
+9. **版本控制**：Git 基线已建立；提交时继续排除 `.godot/`、临时验证文件与本地用户设置。
 
 ---
 

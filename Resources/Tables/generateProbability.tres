@@ -6,33 +6,33 @@
 script = ExtResource("1_qbriq")
 table_name = "generateProbability"
 rows = Array[Dictionary]([{
-"duckId": 1,
-"name": "小黄鸭",
+"goblinId": 1,
+"name": "哥布林斥候",
 "waveNumber": 1,
 "weight": 80
 }, {
-"duckId": 2,
-"name": "休闲鸭",
+"goblinId": 2,
+"name": "哥布林战士",
 "waveNumber": 1,
 "weight": 20
 }, {
-"duckId": 1,
-"name": "小黄鸭",
+"goblinId": 1,
+"name": "哥布林斥候",
 "waveNumber": 2,
 "weight": 50
 }, {
-"duckId": 2,
-"name": "休闲鸭",
+"goblinId": 2,
+"name": "哥布林战士",
 "waveNumber": 2,
 "weight": 50
 }, {
-"duckId": 1,
-"name": "小黄鸭",
+"goblinId": 1,
+"name": "哥布林斥候",
 "waveNumber": 3,
 "weight": 20
 }, {
-"duckId": 2,
-"name": "休闲鸭",
+"goblinId": 2,
+"name": "哥布林战士",
 "waveNumber": 3,
 "weight": 80
 }])

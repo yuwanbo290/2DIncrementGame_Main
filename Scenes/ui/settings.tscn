@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bcsettings01"]
 
 [ext_resource type="Script" uid="uid://drpg7a768ysgg" path="res://Scripts/ui/settings.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://d3gw5nhodfsci" path="res://Textures/ui/panel_bg.jpg" id="2_bg"]
+[ext_resource type="Texture2D" path="res://Textures/ui/menu_bg.png" id="2_bg"]
 [ext_resource type="Texture2D" path="res://Textures/ui/btn_plain.png" id="3_btn"]
 
 [sub_resource type="StyleBoxFlat" id="6_panel_style"]

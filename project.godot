@@ -10,10 +10,10 @@ config_version=5
 
 [application]
 
-config/name="2D_IncrementGame_main"
+config/name="GOBLIN RUSH"
 run/main_scene="res://Scenes/GameManager.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://Textures/ui/goblin_emblem.png"
 
 [autoload]
 

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="TableResource" format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_utrqs"]
+
+[resource]
+script = ExtResource("1_utrqs")
+table_name = "Goblins"
+rows = Array[Dictionary]([{
+"coin": 1.0,
+"goblinID": 1,
+"goblinName": "哥布林斥候",
+"healthNum": 5.0,
+"moveSpeed": 10.0,
+"spriteFrames": "fast",
+"texture": "goblin_scout_1"
+}, {
+"coin": 2.0,
+"goblinID": 2,
+"goblinName": "哥布林战士",
+"healthNum": 10.0,
+"moveSpeed": 10.0,
+"spriteFrames": "fast",
+"texture": "goblin_warrior_1"
+}])

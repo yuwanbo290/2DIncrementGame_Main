@@ -1,9 +1,9 @@
 class_name Enemy
 extends Node2D
-## 鸭子敌人（色块占位实现）：Ducks 表驱动。
-## 外观：圆形色块（颜色按 duckID 从调色板取）+ 名字文字 + 头顶血条。
-## 移动：俯视角池塘漂移，duckID 偶数走直线、奇数加正弦摆动（原型：不同鸭子不同轨迹，表内无轨迹字段，按 ID 区分）。
-## 血量 / 金币 / 移速来自 Ducks 表行。
+## 哥布林敌人（色块占位实现）：Goblins 表驱动。
+## 外观：带尖耳的圆形色块（颜色按 goblinID 从调色板取）+ 名字文字 + 头顶血条。
+## 移动：俯视角战场游荡，goblinID 偶数走直线、奇数加正弦摆动（原型：不同哥布林不同轨迹，表内无轨迹字段，按 ID 区分）。
+## 血量 / 金币 / 移速来自 Goblins 表行。
 
 
 signal died(enemy: Enemy)
@@ -15,18 +15,18 @@ const BODY_RADIUS := 24.0
 const HEALTH_BAR_W := 44.0
 const HEALTH_BAR_H := 6.0
 
-## 鸭子调色板（duckID -> 身体颜色；越界取模）
+## 哥布林调色板（goblinID -> 身体颜色；越界取模）
 const PALETTE: Array[Color] = [
-	Color(1.0, 0.85, 0.2, 1),    # 0 黄
-	Color(1.0, 0.55, 0.2, 1),    # 1 橙
-	Color(1.0, 0.35, 0.35, 1),   # 2 红
-	Color(0.75, 0.4, 1.0, 1),    # 3 紫
-	Color(0.4, 0.7, 1.0, 1),     # 4 蓝
-	Color(0.4, 1.0, 0.6, 1),     # 5 绿
+	Color(0.38, 0.55, 0.16, 1),  # 0 苔绿
+	Color(0.48, 0.66, 0.20, 1),  # 1 黄绿
+	Color(0.30, 0.48, 0.13, 1),  # 2 深绿
+	Color(0.55, 0.50, 0.18, 1),  # 3 橄榄
+	Color(0.25, 0.58, 0.34, 1),  # 4 森林绿
+	Color(0.46, 0.40, 0.16, 1),  # 5 泥金
 ]
 
-## Ducks 表行（只读）
-var duck_row: Dictionary = {}
+## Goblins 表行（只读）
+var goblin_row: Dictionary = {}
 ## 当前血量
 var health: float = 1.0
 ## 最大血量
@@ -42,17 +42,21 @@ var _health_bar: Polygon2D
 var _health_bg: Polygon2D
 
 
-## 由 Ducks 表行构建外观与属性
+## 由 Goblins 表行构建外观与属性
 func setup(row: Dictionary) -> void:
-	duck_row = row
+	goblin_row = row
 	max_health = float(row.get("healthNum", 5.0))
 	health = max_health
 	coin = float(row.get("coin", 1.0))
 	move_speed = float(row.get("moveSpeed", 40.0))
-	var duck_id: int = int(row.get("duckID", 1))
-	var body_color: Color = PALETTE[duck_id % PALETTE.size()]
+	var goblin_id: int = int(row.get("goblinID", 1))
+	var body_color: Color = PALETTE[goblin_id % PALETTE.size()]
 
-	_build_body(body_color, str(row.get("duckName", "鸭")))
+	# 表内保留完整名称供日志/图鉴使用；战斗常驻标签去掉公共前缀，避免群怪时文字大面积重叠。
+	var display_name: String = str(row.get("goblinName", "哥布林")).trim_prefix("哥布林")
+	if display_name == "":
+		display_name = "哥布林"
+	_build_body(body_color, display_name)
 	_build_health_bar()
 	# 随机漂移方向（偏向中下部，避免全部挤在顶部）
 	var angle: float = randf() * TAU
@@ -62,17 +66,38 @@ func setup(row: Dictionary) -> void:
 
 
 func _build_body(color: Color, label_text: String) -> void:
-	# 圆形色块
+	# 圆形头部色块
 	var body: Polygon2D = Polygon2D.new()
 	body.polygon = _make_circle_polygon(BODY_RADIUS, 28)
 	body.color = color
 	add_child(body)
 
+	# 尖耳让占位造型在没有正式美术时也能一眼识别为哥布林。
+	var ear_color: Color = color.darkened(0.16)
+	var left_ear: Polygon2D = Polygon2D.new()
+	left_ear.polygon = PackedVector2Array([
+		Vector2(-BODY_RADIUS + 4.0, -8.0),
+		Vector2(-BODY_RADIUS - 16.0, -2.0),
+		Vector2(-BODY_RADIUS + 3.0, 5.0),
+	])
+	left_ear.color = ear_color
+	add_child(left_ear)
+	var right_ear: Polygon2D = Polygon2D.new()
+	right_ear.polygon = PackedVector2Array([
+		Vector2(BODY_RADIUS - 4.0, -8.0),
+		Vector2(BODY_RADIUS + 16.0, -2.0),
+		Vector2(BODY_RADIUS - 3.0, 5.0),
+	])
+	right_ear.color = ear_color
+	add_child(right_ear)
+
 	# 名字文字（色块中央）
 	var label: Label = Label.new()
 	label.text = label_text
 	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	label.add_theme_color_override("font_color", Color(0.96, 0.94, 0.78, 1))
+	label.add_theme_color_override("font_outline_color", Color(0.05, 0.07, 0.03, 1))
+	label.add_theme_constant_override("outline_size", 3)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -135,8 +160,8 @@ func take_damage(amount: float) -> void:
 func _process(delta: float) -> void:
 	_move_time += delta
 	position += _move_dir * move_speed * delta
-	# 奇数 duckID：正弦摆动（不同移动轨迹）
-	if int(duck_row.get("duckID", 1)) % 2 == 1:
+	# 奇数 goblinID：正弦摆动（不同移动轨迹）
+	if int(goblin_row.get("goblinID", 1)) % 2 == 1:
 		position.x += sin(_move_time * 2.2) * 30.0 * delta
 	# 超出战斗区域后移除
 	var view: Vector2 = get_viewport_rect().size if get_viewport() != null else Vector2(1920, 1080)

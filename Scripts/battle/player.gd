@@ -1,6 +1,6 @@
 class_name BattlePlayer
 extends Node2D
-## 玩家（色块占位实现）：固定在画面底部中央的绿色圆形色块 + "玩家"文字。
+## 玩家（色块占位实现）：固定在画面底部中央的钢蓝色圆形色块 + "玩家"文字。
 ## 瞄准：枪口指向鼠标方向；射击：按住左键持续射击，冷却由武器 atkSpeed 决定。
 ## 子弹由 BattleManager 生成（多弹散布也由管理器处理），本类只负责瞄准与开火判定。
 
@@ -31,13 +31,16 @@ func _build_body() -> void:
 		pts.append(Vector2(cos(angle), sin(angle)) * BODY_RADIUS)
 	_body = Polygon2D.new()
 	_body.polygon = pts
-	_body.color = Color(0.3, 0.95, 0.4, 1)
+	# 与哥布林的绿色调明确区分，避免战斗中混淆敌我。
+	_body.color = Color(0.28, 0.55, 0.76, 1)
 	add_child(_body)
 
 	var label: Label = Label.new()
 	label.text = "玩家"
 	label.add_theme_font_size_override("font_size", 13)
-	label.add_theme_color_override("font_color", Color(0, 0, 0, 1))
+	label.add_theme_color_override("font_color", Color(0.95, 0.97, 1.0, 1))
+	label.add_theme_color_override("font_outline_color", Color(0.03, 0.07, 0.11, 1))
+	label.add_theme_constant_override("outline_size", 3)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
