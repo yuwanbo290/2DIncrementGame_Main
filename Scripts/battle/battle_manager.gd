@@ -8,7 +8,8 @@ extends Node2D
 
 ## 表名
 const TABLE_SPAWN := "generateProbability"
-const TABLE_GOBLINS := "Goblins"
+const TABLE_ENEMY := "Enemy"
+const TABLE_WAVE_BOSS := "waveBoss"
 const TABLE_BUFF := "Buff"
 const TABLE_BUFF_LEVEL := "buffLevel"
 
@@ -18,6 +19,18 @@ const ATTRIBUTE_SLOT_COUNT := 3
 ## 多轮连射的轮间间隔（秒）
 const BURST_INTERVAL := 0.08
 
+## skillLevel 表 changeAttr 可直接增强的 base_config 字段名（key 与 base_config 字段字符串一致）。
+## 战斗开始时备份原值并累加技能加成，战斗退出时恢复，避免污染全局配置。
+const CONFIG_ATTR_KEYS: Array[String] = [
+	"base_attack",
+	"base_attack_speed",
+	"base_crit_rate",
+	"base_crit_dmg",
+	"round_time",
+	"spawn_interval",
+	"spawn_per_wave",
+]
+
 var config: BaseConfig
 var _weapon: Dictionary = {}
 var _damage_bonus: float = 0.0
@@ -25,6 +38,8 @@ var _bullet_count: int = 1
 var _ricochet_count: int = 0
 ## 每次射击的额外连射轮数（Buff 属性 burstCount）；实际轮数 = 1 + 该值
 var _burst_rounds: int = 0
+## 技能加成前备份的 base_config 原始值（仅 CONFIG_ATTR_KEYS），战斗退出时恢复
+var _config_backup: Dictionary = {}
 
 var _player: BattlePlayer
 var _enemies: Array[Enemy] = []
@@ -37,6 +52,12 @@ var _spawn_timer: float = 0.0
 var _stage: int = 1
 var _max_stage: int = 1
 var _finished: bool = false
+## 当前波内已击杀的普通敌人数量（用于 waveBoss.CreateCost 门槛判定）
+var _wave_kills: int = 0
+## Boss 是否在场（在场时停止刷普通怪，击杀后进入下一波）
+var _boss_active: bool = false
+## 居中提示文本（Boss 来袭 / 波次切换 / 通关）剩余显示时间
+var _notice_timer: float = 0.0
 ## 本局累计造成的伤害（含暴击放大），结算界面展示
 var _total_damage: float = 0.0
 ## 结算弹层是否打开（打开期间场景树暂停）
@@ -44,8 +65,10 @@ var _is_result_open: bool = false
 
 ## 局内 Buff 状态只存在于当前 Battle 场景，不写入 SaveSystem；重新进入战斗会自然归零。
 var _buff_levels: Dictionary = {}
-## 指向 config.buff_trigger_kills 中下一个尚未处理的触发节点。
-var _next_buff_trigger_index: int = 0
+## 本局累计经验（当前等级内未消耗部分，攒满 Exp(level) 后升级并扣除）
+var _exp: float = 0.0
+## 当前局内等级（从 1 开始；升级触发局内 Buff 三选一）
+var _level: int = 1
 ## 弹层打开期间阻止重复触发和快速重复选择。
 var _is_choosing_buff: bool = false
 
@@ -58,6 +81,10 @@ func _ready() -> void:
 	if config == null:
 		push_error("[战斗] 未找到 ConfigSystem.config")
 		return
+	# 先备份可被技能增强的 base_config 字段，再应用局外技能加成。
+	# 技能可增强 round_time / spawn_interval / spawn_per_wave 等，因此必须在读取本局节奏前应用。
+	_backup_config_attrs()
+	_load_meta_bonuses()
 	_time_left = config.round_time
 	_spawn_timer = config.spawn_interval
 
@@ -67,7 +94,6 @@ func _ready() -> void:
 		# 空手兜底：atk=0 时伤害即玩家基础攻击 base_attack；atkSpeed=1.0 即基础攻速
 		_weapon = {"weaponName": "空手", "atk": 0.0, "atkSpeed": 1.0}
 
-	_load_meta_bonuses()
 	_max_stage = _get_max_stage()
 
 	# 返回按钮：放弃本局直接回备战（不结算）
@@ -113,6 +139,7 @@ func _initialize_battle() -> void:
 	)
 	_player.fire_requested.connect(_on_player_fire)
 	_spawn_enemy()
+	_show_notice("讨伐开始！第 %d 波" % _stage, 2.0)
 
 
 func _on_back_pressed() -> void:
@@ -120,6 +147,24 @@ func _on_back_pressed() -> void:
 	_close_buff_choice()
 	UIManager.clear_all()
 	get_tree().change_scene_to_file("res://Scenes/ui/preparation.tscn")
+
+
+## 备份可被技能增强的 base_config 字段原始值（战斗退出时恢复，避免污染全局配置）。
+func _backup_config_attrs() -> void:
+	_config_backup.clear()
+	for key in CONFIG_ATTR_KEYS:
+		if config != null and config.get(key) != null:
+			_config_backup[key] = config.get(key)
+
+
+## 战斗结束（或异常退出）恢复 base_config 原值；下次战斗会重新按技能等级计算加成。
+func _restore_config_attrs() -> void:
+	if config == null:
+		_config_backup.clear()
+		return
+	for key in _config_backup.keys():
+		config.set(key, _config_backup[key])
+	_config_backup.clear()
 
 
 func _load_meta_bonuses() -> void:
@@ -151,7 +196,9 @@ func _apply_attribute_slots(level_row: Dictionary) -> void:
 		_apply_attribute_change(attr, value)
 
 
-## 首版只开放战斗当前已经完整支持的三种属性。
+## 战斗属性统一应用：既支持战斗内部属性（atk / bulletCount / ricochetCount / burstCount），
+## 也支持以 base_config 字段名命名的属性（base_attack / base_attack_speed / base_crit_rate /
+## base_crit_dmg / round_time / spawn_interval / spawn_per_wave），后者直接累加到本局生效的 config。
 ## 未识别 key 会给出警告但不会阻断战斗，便于发现表格拼写错误。
 func _apply_attribute_change(attr: String, value: float) -> void:
 	match attr:
@@ -166,43 +213,75 @@ func _apply_attribute_change(attr: String, value: float) -> void:
 		"burstCount":
 			_burst_rounds += int(value)
 		_:
+			if _apply_config_attribute(attr, value):
+				return
 			push_warning("[战斗] 忽略未支持的属性 key：%s" % attr)
+
+
+## 把以 base_config 字段名命名的属性 key 累加到当前 base_config（仅本局生效，退出时恢复）。
+func _apply_config_attribute(attr: String, value: float) -> bool:
+	if not attr in CONFIG_ATTR_KEYS:
+		return false
+	var current: Variant = config.get(attr)
+	match typeof(current):
+		TYPE_FLOAT:
+			config.set(attr, float(current) + value)
+		TYPE_INT:
+			config.set(attr, int(current) + int(value))
+	return true
 
 
 # ---- 局内 Buff：触发与候选抽取 ----
 
-## 检查当前击杀数是否到达下一个三选一节点。
-##
-## 使用 >= 而不是 ==，可以兼容同一帧连续击杀跨过阈值的情况。
-## 使用 while，可以在一次选择结束后继续补处理已经跨过的后续阈值。
-func _check_buff_trigger() -> void:
+## 击杀获得经验：累计到升级所需经验后升级并触发局内 Buff 三选一。
+## 经验只在当前战斗生效，不写入 SaveSystem；重新进入战斗自然归零。
+func _add_exp(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	_exp += amount
+	_update_hud()
+	# 延迟到当前碰撞循环结束后再检查升级，避免在遍历敌人数组时暂停场景树。
+	call_deferred("_check_level_up")
+
+
+## 从当前等级升到下一级所需经验：Exp(level) = exp_base × level^exp_power + exp_linear × (level-1)
+func _exp_for_level(level: int) -> float:
+	return config.exp_base * pow(float(level), config.exp_power) + config.exp_linear * float(maxi(level - 1, 0))
+
+
+## 检查当前经验是否足够升级；每次只处理一级：扣除所需经验、等级 +1、弹出三选一。
+## 一次获得大量经验连升多级时，玩家选完本次 Buff 后由 _on_buff_selected 继续补弹下一级。
+func _check_level_up() -> void:
 	if _finished or _is_choosing_buff or config == null or _buff_choice_ui == null:
 		return
-
-	var trigger_kills: Array[int] = config.buff_trigger_kills
-	while _next_buff_trigger_index < trigger_kills.size():
-		var threshold: int = trigger_kills[_next_buff_trigger_index]
-		if _kills < threshold:
-			return
-
-		var choice_count: int = mini(config.buff_choice_count, BuffChoiceUI.CHOICE_CAPACITY)
-		var picked_rows: Array[Dictionary] = _roll_buff_choices(choice_count)
-		# 当前阈值已完成检查；即使候选池为空也要前进，避免每次击杀都重复尝试同一节点。
-		_next_buff_trigger_index += 1
-		if picked_rows.is_empty():
-			push_warning("[战斗] 击杀节点 %d 没有可用 Buff，已跳过本次三选一" % threshold)
-			continue
-
-		var display_choices: Array[Dictionary] = []
-		for buff_row in picked_rows:
-			display_choices.append(_build_buff_choice_data(buff_row))
-
-		# 先设置互斥标记并完成界面数据刷新，再暂停场景树。
-		# BuffChoiceUI 使用 PROCESS_MODE_ALWAYS，因此暂停后按钮仍能响应。
-		_is_choosing_buff = true
-		_buff_choice_ui.show_choices(display_choices)
-		get_tree().paused = true
+	var needed: float = _exp_for_level(_level)
+	if _exp < needed:
 		return
+
+	_exp -= needed
+	_level += 1
+	_update_hud()
+	_open_buff_choice()
+
+
+## 弹出一轮局内 Buff 三选一并暂停场景树；无可用 Buff 时跳过（经验已扣除，继续检查下一级）。
+func _open_buff_choice() -> void:
+	var choice_count: int = mini(config.buff_choice_count, BuffChoiceUI.CHOICE_CAPACITY)
+	var picked_rows: Array[Dictionary] = _roll_buff_choices(choice_count)
+	if picked_rows.is_empty():
+		push_warning("[战斗] 升级 Lv.%d 没有可用 Buff，已跳过本次三选一" % _level)
+		call_deferred("_check_level_up")
+		return
+
+	var display_choices: Array[Dictionary] = []
+	for buff_row in picked_rows:
+		display_choices.append(_build_buff_choice_data(buff_row))
+
+	# 先设置互斥标记并完成界面数据刷新，再暂停场景树。
+	# BuffChoiceUI 使用 PROCESS_MODE_ALWAYS，因此暂停后按钮仍能响应。
+	_is_choosing_buff = true
+	_buff_choice_ui.show_choices(display_choices)
+	get_tree().paused = true
 
 
 ## 从所有“未满级且存在下一级配置”的 Buff 中加权抽取，且同一次三选一不重复。
@@ -310,8 +389,8 @@ func _on_buff_selected(buff_id: int) -> void:
 	_apply_next_buff_level(buff_id)
 	_close_buff_choice()
 
-	# 如果同一帧多击杀已经跨过下一个阈值，恢复战斗后继续补弹下一次选择。
-	call_deferred("_check_buff_trigger")
+	# 若经验仍足够下一级（一次击杀大量经验连升多级），恢复战斗后继续补弹下一次选择。
+	call_deferred("_check_level_up")
 
 
 ## 只应用“当前等级 + 1”这一行，避免重复叠加已经获得过的旧等级效果。
@@ -343,16 +422,12 @@ func _close_buff_choice() -> void:
 
 # ---- 刷怪 ----
 
+## 波数上限来自 waveBoss 表（每波击杀门槛达成后刷新 Boss，击杀 Boss 推进下一波）。
 func _get_max_stage() -> int:
 	var max_stage: int = 1
-	for row in TableDB.rows_of(TABLE_SPAWN):
+	for row in TableDB.rows_of(TABLE_WAVE_BOSS):
 		max_stage = maxi(max_stage, int(row.get("waveNumber", 1)))
 	return max_stage
-
-
-## 按击杀数换算当前阶段（10以内=1，10-19=2，20+ 封顶）
-func _stage_from_kills(kills: int) -> int:
-	return clampi(int(kills / float(config.kills_per_stage)) + 1, 1, _max_stage)
 
 
 func _spawn_enemy() -> void:
@@ -374,13 +449,13 @@ func _spawn_enemy() -> void:
 			pick = row
 			break
 
-	var goblin_row: Dictionary = TableDB.get_first(TABLE_GOBLINS, "goblinID", int(pick.get("goblinId", 1)))
-	if goblin_row.is_empty():
-		push_warning("[战斗] Goblins 表缺少 goblinID=%d" % int(pick.get("goblinId", 0)))
+	var enemy_row: Dictionary = TableDB.get_first(TABLE_ENEMY, "enemyID", int(pick.get("enemyId", 1)))
+	if enemy_row.is_empty():
+		push_warning("[战斗] Enemy 表缺少 enemyID=%d" % int(pick.get("enemyId", 0)))
 		return
 
 	var enemy: Enemy = Enemy.new()
-	enemy.setup(goblin_row)
+	enemy.setup(enemy_row)
 	# 生成位置：屏幕内随机（避开底部玩家区域）
 	var view: Vector2 = get_viewport_rect().size if get_viewport() != null else Vector2(1920, 1080)
 	enemy.position = Vector2(
@@ -390,6 +465,76 @@ func _spawn_enemy() -> void:
 	enemy.died.connect(_on_enemy_died)
 	$World.add_child(enemy)
 	_enemies.append(enemy)
+
+
+## 当前波对应的 waveBoss 表行（无配置返回空字典）。
+func _get_current_wave_boss() -> Dictionary:
+	return TableDB.get_first(TABLE_WAVE_BOSS, "waveNumber", _stage)
+
+
+## 本波击杀数达到 waveBoss.CreateCost 时刷新 Boss（Boss 在场时不再重复触发）。
+func _check_boss_spawn() -> void:
+	if _boss_active or _finished:
+		return
+	var boss_row: Dictionary = _get_current_wave_boss()
+	if boss_row.is_empty():
+		return
+	var cost: int = int(boss_row.get("CreateCost", 0))
+	if cost > 0 and _wave_kills >= cost:
+		_spawn_boss()
+
+
+## 按当前波从 waveBoss 表加权随机选 Boss 并生成（Boss 敌人带 is_boss 标记）。
+func _spawn_boss() -> void:
+	if _boss_active:
+		return
+	var boss_rows: Array[Dictionary] = []
+	var total_weight: int = 0
+	for row in TableDB.rows_of(TABLE_WAVE_BOSS):
+		if int(row.get("waveNumber", 0)) == _stage:
+			boss_rows.append(row)
+			total_weight += int(row.get("weight", 1))
+	if boss_rows.is_empty():
+		push_warning("[战斗] waveBoss 表缺少 waveNumber=%d 的 Boss 配置" % _stage)
+		return
+
+	# 加权随机选 Boss（当前每波 1 个，weight 为未来多 Boss 预留）
+	var roll: int = randi() % maxi(total_weight, 1)
+	var pick: Dictionary = boss_rows[0]
+	for row in boss_rows:
+		roll -= int(row.get("weight", 1))
+		if roll < 0:
+			pick = row
+			break
+
+	var enemy_row: Dictionary = TableDB.get_first(TABLE_ENEMY, "enemyID", int(pick.get("enemyId", 1)))
+	if enemy_row.is_empty():
+		push_warning("[战斗] Enemy 表缺少 Boss enemyID=%d" % int(pick.get("enemyId", 0)))
+		return
+
+	var boss: Enemy = Enemy.new()
+	boss.setup(enemy_row, true)
+	# Boss 生成在屏幕上部中央区域，突出存在感
+	var view: Vector2 = get_viewport_rect().size if get_viewport() != null else Vector2(1920, 1080)
+	boss.position = Vector2(view.x / 2.0, randf_range(60.0, view.y * 0.35))
+	boss.died.connect(_on_enemy_died)
+	$World.add_child(boss)
+	_enemies.append(boss)
+	_boss_active = true
+	_show_notice("⚠ BOSS 来袭：%s ⚠" % str(pick.get("name", "Boss")), 2.5)
+
+
+## Boss 被击杀：推进到下一波；最后一波打完直接结算（场上普通敌人保留不清除，Boss 存活期间也照常刷怪）。
+func _on_boss_defeated() -> void:
+	_boss_active = false
+	_wave_kills = 0
+
+	if _stage >= _max_stage:
+		_show_notice("🎉 讨伐完成！", 3.0)
+		_finish_round()
+		return
+	_stage += 1
+	_show_notice("进入第 %d 波" % _stage, 2.0)
 
 
 # ---- 射击 ----
@@ -431,11 +576,14 @@ func _on_enemy_died(enemy: Enemy) -> void:
 	_enemies.erase(enemy)
 	_gold += enemy.coin
 	_kills += 1
+	_add_exp(enemy.exp_value)
+	if enemy.is_boss:
+		_on_boss_defeated()
+	else:
+		_wave_kills += 1
+		_check_boss_spawn()
 	_update_hud()
 	enemy.queue_free()
-
-	# 延迟到当前碰撞循环结束后再打开弹层：同一帧的连续击杀会先全部计数，随后只弹出一次选择。
-	call_deferred("_check_buff_trigger")
 
 
 ## 在受击位置生成伤害数字（普通/暴击样式由 DamageNumber 决定）。
@@ -467,26 +615,25 @@ func _process(delta: float) -> void:
 	# 每帧刷新 HUD：倒计时实时显示，最后 10 秒红闪
 	_update_hud()
 
-	# 刷怪计时（初始 spawn_interval 秒）
+	# 刷怪计时（初始 spawn_interval 秒）；Boss 存活期间依旧正常刷小怪
 	_spawn_timer -= delta
 	if _spawn_timer <= 0.0:
 		_spawn_timer = config.spawn_interval
 		for i in config.spawn_per_wave:
 			_spawn_enemy()
 
-	# 阶段切换（击杀数跨过阈值时更新刷怪表）
-	var stage: int = _stage_from_kills(_kills)
-	if stage != _stage:
-		_stage = stage
+	# 居中提示文本（Boss 来袭 / 波次切换 / 通关）倒计时淡出
+	_update_notice(delta)
 
-	# 子弹与哥布林碰撞（圆形距离判定）
+	# 子弹与哥布林碰撞（圆形距离判定；Boss 按缩放后的体型计算判定半径）
 	for bullet in _bullets:
 		if not is_instance_valid(bullet):
 			continue
 		for enemy in _enemies:
 			if not is_instance_valid(enemy):
 				continue
-			if bullet.position.distance_to(enemy.position) < Bullet.RADIUS + Enemy.BODY_RADIUS:
+			var hit_radius: float = Enemy.BODY_RADIUS * enemy.scale.x
+			if bullet.position.distance_to(enemy.position) < Bullet.RADIUS + hit_radius:
 				enemy.take_damage(bullet.damage)
 				_total_damage += bullet.damage
 				_spawn_damage_number(enemy.position, bullet.damage, bullet.is_crit)
@@ -499,6 +646,31 @@ func _process(delta: float) -> void:
 		if is_instance_valid(b):
 			alive.append(b)
 	_bullets = alive
+
+
+## 显示居中的大号提示文本（Boss 来袭 / 波次切换 / 通关），自动淡出。
+func _show_notice(text: String, duration: float = 2.0) -> void:
+	var notice: Label = $UI.get_node_or_null("NoticeLabel") as Label
+	if notice == null:
+		return
+	notice.text = text
+	notice.visible = true
+	notice.modulate.a = 1.0
+	_notice_timer = duration
+
+
+## 每帧驱动提示文本倒计时与淡出（最后 0.5 秒淡出）。
+func _update_notice(delta: float) -> void:
+	if _notice_timer <= 0.0:
+		return
+	_notice_timer -= delta
+	var notice: Label = $UI.get_node_or_null("NoticeLabel") as Label
+	if notice == null:
+		return
+	if _notice_timer <= 0.0:
+		notice.visible = false
+	else:
+		notice.modulate.a = clampf(_notice_timer / 0.5, 0.0, 1.0)
 
 
 func _update_hud() -> void:
@@ -530,6 +702,16 @@ func _update_hud() -> void:
 		else:
 			timer_big.add_theme_color_override("font_color", Color(1, 0.85, 0.2, 1))
 			timer_big.add_theme_font_size_override("font_size", 46)
+
+	# 底部经验条：进度 = 当前经验 / 升级所需经验
+	if config != null:
+		var exp_bar: ProgressBar = ui.get_node_or_null("ExpBar") as ProgressBar
+		if exp_bar:
+			exp_bar.max_value = maxf(_exp_for_level(_level), 1.0)
+			exp_bar.value = _exp
+		var exp_label: Label = ui.get_node_or_null("ExpBar/ExpLabel") as Label
+		if exp_label:
+			exp_label.text = "Lv.%d ｜ %d/%d" % [_level, int(_exp), int(_exp_for_level(_level))]
 
 
 func _finish_round() -> void:
@@ -565,3 +747,5 @@ func _exit_tree() -> void:
 		return
 	if _is_choosing_buff or _is_result_open:
 		get_tree().paused = false
+	# 恢复被技能增强的 base_config 字段，防止污染后续场景 / 下一次战斗
+	_restore_config_attrs()

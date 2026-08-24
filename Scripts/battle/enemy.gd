@@ -1,9 +1,9 @@
 class_name Enemy
 extends Node2D
-## 哥布林敌人（色块占位实现）：Goblins 表驱动。
-## 外观：带尖耳的圆形色块（颜色按 goblinID 从调色板取）+ 名字文字 + 头顶血条。
-## 移动：俯视角战场游荡，goblinID 偶数走直线、奇数加正弦摆动（原型：不同哥布林不同轨迹，表内无轨迹字段，按 ID 区分）。
-## 血量 / 金币 / 移速来自 Goblins 表行。
+## 哥布林敌人（色块占位实现）：Enemy 表驱动。
+## 外观：带尖耳的圆形色块（颜色按 enemyID 从调色板取）+ 名字文字 + 头顶血条。
+## 移动：俯视角战场游荡，enemyID 偶数走直线、奇数加正弦摆动（原型：不同哥布林不同轨迹，表内无轨迹字段，按 ID 区分）。
+## 血量 / 金币 / 移速来自 Enemy 表行。
 
 
 signal died(enemy: Enemy)
@@ -15,7 +15,7 @@ const BODY_RADIUS := 24.0
 const HEALTH_BAR_W := 44.0
 const HEALTH_BAR_H := 6.0
 
-## 哥布林调色板（goblinID -> 身体颜色；越界取模）
+## 哥布林调色板（enemyID -> 身体颜色；越界取模）
 const PALETTE: Array[Color] = [
 	Color(0.38, 0.55, 0.16, 1),  # 0 苔绿
 	Color(0.48, 0.66, 0.20, 1),  # 1 黄绿
@@ -24,17 +24,25 @@ const PALETTE: Array[Color] = [
 	Color(0.25, 0.58, 0.34, 1),  # 4 森林绿
 	Color(0.46, 0.40, 0.16, 1),  # 5 泥金
 ]
+## Boss 体型放大倍数（相对普通哥布林）
+const BOSS_SCALE := 1.5
+## Boss 身体颜色（深红，与普通哥布林的绿色系明显区分）
+const BOSS_COLOR := Color(0.62, 0.12, 0.16, 1)
 
-## Goblins 表行（只读）
-var goblin_row: Dictionary = {}
+## Enemy 表行（只读）
+var enemy_row: Dictionary = {}
 ## 当前血量
 var health: float = 1.0
 ## 最大血量
 var max_health: float = 1.0
 ## 击杀金币
 var coin: float = 1.0
+## 击杀经验（局内升级用，来自 Enemy 表 exp 列）
+var exp_value: float = 1.0
 ## 移动速度（像素/秒）
 var move_speed: float = 40.0
+## 是否为 Boss（waveBoss 表驱动）：放大体型、深红配色、血条常驻
+var is_boss: bool = false
 
 var _move_dir: Vector2 = Vector2.RIGHT
 var _move_time: float = 0.0
@@ -42,20 +50,26 @@ var _health_bar: Polygon2D
 var _health_bg: Polygon2D
 
 
-## 由 Goblins 表行构建外观与属性
-func setup(row: Dictionary) -> void:
-	goblin_row = row
+## 由 Enemy 表行构建外观与属性；boss=true 时放大体型、深红配色、血条常驻（waveBoss 表驱动）。
+func setup(row: Dictionary, boss: bool = false) -> void:
+	is_boss = boss
+	enemy_row = row
 	max_health = float(row.get("healthNum", 5.0))
 	health = max_health
 	coin = float(row.get("coin", 1.0))
+	exp_value = float(row.get("exp", 1.0))
 	move_speed = float(row.get("moveSpeed", 40.0))
-	var goblin_id: int = int(row.get("goblinID", 1))
-	var body_color: Color = PALETTE[goblin_id % PALETTE.size()]
+	var enemy_id: int = int(row.get("enemyID", 1))
+	var body_color: Color = BOSS_COLOR if is_boss else PALETTE[enemy_id % PALETTE.size()]
 
 	# 表内保留完整名称供日志/图鉴使用；战斗常驻标签去掉公共前缀，避免群怪时文字大面积重叠。
-	var display_name: String = str(row.get("goblinName", "哥布林")).trim_prefix("哥布林")
-	if display_name == "":
-		display_name = "哥布林"
+	var display_name: String = str(row.get("goblinName", "哥布林"))
+	if is_boss:
+		scale = Vector2.ONE * BOSS_SCALE
+	else:
+		display_name = display_name.trim_prefix("哥布林")
+		if display_name == "":
+			display_name = "哥布林"
 	_build_body(body_color, display_name)
 	_build_health_bar()
 	# 随机漂移方向（偏向中下部，避免全部挤在顶部）
@@ -137,8 +151,8 @@ static func _make_circle_polygon(radius: float, segments: int) -> PackedVector2A
 func _update_health_bar() -> void:
 	if _health_bar == null:
 		return
-	# 血条默认隐藏，仅受击（血量不满）时显示
-	var show_bar: bool = health < max_health and health > 0.0
+	# 血条默认隐藏，仅受击（血量不满）时显示；Boss 血条常驻
+	var show_bar: bool = is_boss or (health < max_health and health > 0.0)
 	_health_bg.visible = show_bar
 	_health_bar.visible = show_bar
 	var ratio: float = clampf(health / max_health, 0.0, 1.0)
@@ -164,8 +178,8 @@ func take_damage(amount: float) -> void:
 func _process(delta: float) -> void:
 	_move_time += delta
 	position += _move_dir * move_speed * delta
-	# 奇数 goblinID：正弦摆动（不同移动轨迹）
-	if int(goblin_row.get("goblinID", 1)) % 2 == 1:
+	# 奇数 enemyID：正弦摆动（不同移动轨迹）
+	if int(enemy_row.get("enemyID", 1)) % 2 == 1:
 		position.x += sin(_move_time * 2.2) * 30.0 * delta
 	# 超出战斗区域后移除
 	var view: Vector2 = get_viewport_rect().size if get_viewport() != null else Vector2(1920, 1080)

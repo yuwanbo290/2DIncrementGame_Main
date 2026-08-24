@@ -100,7 +100,7 @@
 - **回调函数**：统一 `_on_<对象>_<事件>`（`_on_back_pressed`）。
 
 ### 4.3 数据表字段命名（重要）
-- **用户提供的表**（`Goblins`/`Skill`/`generateProbability`/`skillLevel`/`shop`/`weapons`/`Buff`/`buffLevel`）：字段名**以用户原表为准，禁止擅自改名**。
+- **用户提供的表**（`Enemy`/`Skill`/`generateProbability`/`skillLevel`/`shop`/`weapons`/`Buff`/`buffLevel`/`waveBoss`）：字段名**以用户原表为准，禁止擅自改名**。
 - **未来 AI 新增的表**：字段名**必须 snake_case**（`fire_rate`、`base_cost`），表名 snake_case 小写。
 - **表名与源文件名一致**：`<表名>.xlsx` ↔ 表名 `<表名>` ↔ `<表名>.tres`（CSV 仅为兼容输入）。
 - 若未来用户要求统一既有 8 张表字段命名，须由用户拍板后批量同步 xlsx / .tres / 引用代码，一次性完成，不留半迁移状态。
@@ -177,8 +177,8 @@ core ← manager ← ui
 
 ### 7.2 运行时查询（统一走 TableDB）
 ```gdscript
-var goblins: Array[Dictionary] = TableDB.rows_of("Goblins")
-var goblin: Dictionary = TableDB.get_first("Goblins", "goblinID", 1)
+var enemies: Array[Dictionary] = TableDB.rows_of("Enemy")
+var enemy: Dictionary = TableDB.get_first("Enemy", "enemyID", 1)
 var levels: Array[Dictionary] = TableDB.get_all("skillLevel", "Id", 1)
 ```
 - 查询结果为空返回 `[]` / `{}`，**调用方必须判空**（`row.is_empty()`）。
@@ -186,7 +186,7 @@ var levels: Array[Dictionary] = TableDB.get_all("skillLevel", "Id", 1)
 
 ### 7.3 数据源一致性
 - **一张表 = 一个源表（.xlsx）+ 一个 .tres**，二者必须同时存在。
-- 当前 8 张表（Goblins / Skill / generateProbability / skillLevel / shop / weapons / Buff / buffLevel）均为 xlsx 源，已对齐。
+- 当前 9 张表（Enemy / Skill / generateProbability / skillLevel / shop / weapons / Buff / buffLevel / waveBoss）均为 xlsx 源，已对齐。
 - 新增表时：先建 xlsx → 导表 → 在 `接口文档.md` 登记表结构 → 再写查询代码。
 
 ---
@@ -253,7 +253,7 @@ battle.tscn (Node2D + battle_manager.gd)
 - 敌人、子弹、掉落物各自独立脚本 + 独立场景，由管理器统一 spawn/管理。
 
 ### 10.2 哥布林（敌人）规范
-- 属性从 `Goblins` 表读：`goblinID`/`goblinName`/`healthNum`/`coin`/`moveSpeed`/`texture`/`spriteFrames`。
+- 属性从 `Enemy` 表读：`enemyID`/`goblinName`/`healthNum`/`coin`/`exp`/`moveSpeed`/`texture`/`spriteFrames`。
 - 敌人节点统一挂 `enemy.gd`，实例化后注入表行数据（**不硬编码数值**）。
 - 死亡：给金币（`coin` 字段），累加击杀统计（`SaveSystem.set_stat("best_kills", ...)`），局内计数，局结束落盘。
 
@@ -264,16 +264,17 @@ battle.tscn (Node2D + battle_manager.gd)
 
 ### 10.4 技能系统规范
 - 技能树：`Skill` 表（`Id`/`previouId`/`maxLevel`）定义解锁前置与满级；`skillLevel` 表定义每级消耗与效果（`changeAttr1~3` + `attrValue1~3` + `specialEffect`）。
-- 属性改动用 `changeAttr*` 字符串映射到运行时属性（如 `atk`/`bulletCount`/`ricochetCount`/`burstCount`），特殊能力用 `specialEffect` key 分发（如 `UnlockSuperBullet`）。
+- 局外养成界面为**传统技能树**：按 `previouId` 分层（缺失/0 = 根节点，BFS 算深度），同层水平均分整层居中；节点面板显示名称/描述/等级/升级按钮，前置连线由 `skill_tree_canvas.gd`（`SkillTreeCanvas._draw`）绘制，解锁亮绿/未解锁暗灰。
+- 属性改动用 `changeAttr*` 字符串映射到运行时属性（如 `atk`/`bulletCount`/`ricochetCount`/`burstCount`），也支持直接写 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg`/`round_time`/`spawn_interval`/`spawn_per_wave`，战斗开始应用、退出恢复）；特殊能力用 `specialEffect` key 分发（如 `UnlockSuperBullet`）。
 - 局外养成的技能等级存 `skill_levels`（落盘）；局内技能/临时增益不落盘；局外存金币 + 技能等级 + 统计。
 
-### 10.5 波次 / 生成规范
-- 按 `generateProbability` 表（`waveNumber`/`goblinId`/`weight`）做加权随机刷怪。
-- 刷怪节奏用 `base_config` 的 `spawn_interval` / `spawn_per_wave`；单局时长 `round_time`。
-- Boss 触发节点用 `base_config.boss_nodes`（累计击杀数）。
+### 10.5 波次 / Boss 规范
+- 波次推进由 `waveBoss` 表驱动：当前波内普通敌人击杀数达到 `CreateCost` → 刷新 Boss；击杀 Boss → 进入下一波；最后一波 Boss 击杀后直接结算。
+- 普通刷怪按 `generateProbability` 表（`waveNumber`/`enemyId`/`weight`）加权随机；Boss 按 `waveBoss` 表（`waveNumber`/`enemyId`/`weight`）加权随机。
+- 刷怪节奏用 `base_config` 的 `spawn_interval` / `spawn_per_wave`；单局时长 `round_time`。Boss 存活期间仍正常刷小怪；击杀 Boss 后场上小怪保留、直接进入下一波。
 
 ### 10.6 局内 Buff 规范
-- 触发节点 `base_config.buff_trigger_kills`，每次 `buff_choice_count` 选 1（3 选 1）。
+- 击杀敌人获得经验（`Enemy.exp` 列）→ 经验攒满 `Exp(level) = exp_base × level^exp_power + exp_linear × (level-1)` 后升级并扣除该级所需经验，每次升级触发 `buff_choice_count` 选 1（3 选 1）。
 - Buff 效果为**局内临时**，保存在战斗管理器内存字典中，**绝不写 SaveSystem**。
 
 ### 10.7 战斗循环结束
@@ -359,13 +360,13 @@ battle.tscn (Node2D + battle_manager.gd)
 
 ### 15.1 建议整改（P1，需用户确认）
 1. **文件命名统一**：`Gamemanager.gd` → `game_manager.gd`，`startui.gd` → `start_ui.gd`（同步改 autoload/脚本引用）。
-2. **表字段命名统一**：用户表字段为 camelCase/PascalCase（`goblinID`/`Id`/`maxLevel`）。建议由用户决定是否统一，统一时一次性迁移源表 + .tres + 引用代码。
+2. **表字段命名统一**：用户表字段为 camelCase/PascalCase（`enemyID`/`Id`/`maxLevel`）。建议由用户决定是否统一，统一时一次性迁移源表 + .tres + 引用代码。
 3. **`confirm_dialog.gd` 重复 `_add_hover`**：与 UIBase 重复，可复用 UIBase 版本（需确认 ConfirmDialog 不继承 UIBase 的原因）。
 
 ### 15.2 待补（P2，随功能开发补齐）
 5. **关卡与 Boss 待实现**：核心射击、哥布林刷怪和局内 Buff 已完成；正式关卡波数、击杀门槛与关底 Boss 仍需在设计确认后开发。
 6. **商店/武器系统**：已基于 `shop` / `weapons` 表实现（购买 + 装备，落盘 `owned_weapons`/`equipped_weapon`）；数值待用户配置。
-7. **哥布林正式美术资源缺失**：`Goblins.xlsx` 已预留 `goblin_scout_1`/`goblin_warrior_1`/`fast` 资源键，当前敌人仍使用代码绘制的尖耳色块占位造型。
+7. **哥布林正式美术资源缺失**：`Enemy.xlsx` 已预留 `goblin_scout_1`/`goblin_warrior_1`/`fast` 资源键，当前敌人仍使用代码绘制的尖耳色块占位造型。
 8. **音频缺失**：设置页有音量 + AudioServer 引用 Master/Music/SFX 总线，但 `Audio/` 无音频文件。
 9. **版本控制**：Git 基线已建立；提交时继续排除 `.godot/`、临时验证文件与本地用户设置。
 

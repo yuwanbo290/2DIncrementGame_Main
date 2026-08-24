@@ -24,18 +24,18 @@ extends Resource
 @export var spawn_interval: float = 2.0
 ## 每次刷出的哥布林数量
 @export var spawn_per_wave: int = 1
-## 每击杀多少只哥布林切换下一阶段刷怪区间（10以内=1，10-19=2，以此类推）
-@export var kills_per_stage: int = 10
-
-@export_category("Boss")
-## 触发 Boss 所需的累计击杀数节点
-@export var boss_nodes: Array[int] = [20, 50, 100, 250]
 
 @export_category("局内Buff")
-## 击杀多少只哥布林触发一次 3 选 1
-@export var buff_trigger_kills: Array[int] = [10, 25, 45]
-## 每次 3 选 1 的可选数量
+## 每次升级 3 选 1 的可选数量
 @export var buff_choice_count: int = 3
+
+@export_category("经验")
+## 升级所需经验公式：Exp(level) = exp_base × level^exp_power + exp_linear × (level-1)
+@export var exp_base: float = 6.0
+## 经验公式的指数系数
+@export var exp_power: float = 1.4
+## 经验公式的线性项系数
+@export var exp_linear: float = 8.0
 
 @export_category("战斗")
 ## 子弹飞行速度（像素/秒）
