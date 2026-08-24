@@ -15,6 +15,7 @@ export_presets.cfg.*
 # 用户本地设置（每个开发者不同）
 *.userdata
 *.userdata.*
+_dsh_profile_backup/*
 
 # 编辑器临时文件
 *.tmp
