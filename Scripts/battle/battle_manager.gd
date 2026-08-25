@@ -13,8 +13,9 @@ const TABLE_WAVE_BOSS := "waveBoss"
 const TABLE_BUFF := "Buff"
 const TABLE_BUFF_LEVEL := "buffLevel"
 
-## Buff 与局外技能表都使用 changeAttr1~3 / attrValue1~3，统一由同一个属性入口处理。
-const ATTRIBUTE_SLOT_COUNT := 3
+## Buff 表使用 changeAttr1~4 / attrValue1~4（含每级 desc 文案）；skillLevel 表为 changeAttr1~3。
+## 槽位数取两者最大值，统一由同一个属性入口处理。
+const ATTRIBUTE_SLOT_COUNT := 4
 
 ## 多轮连射的轮间间隔（秒）
 const BURST_INTERVAL := 0.08
@@ -135,11 +136,23 @@ func _initialize_battle() -> void:
 	add_child(_player)
 	_player.setup(
 		Vector2(view.x / 2.0, view.y - BattlePlayer.MARGIN_BOTTOM),
-		1.0 / maxf(config.base_attack_speed * float(_weapon.get("atkSpeed", 1.0)), 0.05)
+		_get_fire_interval()
 	)
 	_player.fire_requested.connect(_on_player_fire)
 	_spawn_enemy()
 	_show_notice("讨伐开始！第 %d 波" % _stage, 2.0)
+
+
+## 当前射击间隔（秒）= 1 / (基础攻速 × 武器攻速)，下限 0.05。
+func _get_fire_interval() -> float:
+	return 1.0 / maxf(config.base_attack_speed * float(_weapon.get("atkSpeed", 1.0)), 0.05)
+
+
+## 刷新玩家射击间隔：局内 Buff / 技能增强 base_attack_speed 后即时生效。
+func _refresh_fire_interval() -> void:
+	if _player == null:
+		return
+	_player.fire_interval = _get_fire_interval()
 
 
 func _on_back_pressed() -> void:
@@ -228,6 +241,9 @@ func _apply_config_attribute(attr: String, value: float) -> bool:
 			config.set(attr, float(current) + value)
 		TYPE_INT:
 			config.set(attr, int(current) + int(value))
+	# 攻速变化需要立即刷新玩家射击间隔（局内 Buff 选择后即时生效）
+	if attr == "base_attack_speed":
+		_refresh_fire_interval()
 	return true
 
 
@@ -354,8 +370,12 @@ func _build_buff_choice_data(buff_row: Dictionary) -> Dictionary:
 	}
 
 
-## 把属性 key 转为玩家可读的本级效果文字。
+## 把属性 key 转为玩家可读的本级效果文字：优先用 buffLevel 表的 desc（策划文案），缺失时自动拼接。
 func _describe_buff_level(level_row: Dictionary) -> String:
+	var desc: String = str(level_row.get("desc", ""))
+	if desc != "":
+		return desc
+
 	var effects: Array[String] = []
 	for index in range(1, ATTRIBUTE_SLOT_COUNT + 1):
 		var attr: String = str(level_row.get("changeAttr%d" % index, ""))
@@ -372,12 +392,31 @@ func _describe_buff_level(level_row: Dictionary) -> String:
 				effects.append("边界弹射次数 +%s" % value_text)
 			"burstCount":
 				effects.append("连射轮数 +%s" % value_text)
+			"base_attack":
+				effects.append("攻击 +%s" % value_text)
+			"base_attack_speed":
+				effects.append("攻击速度 +%s%%" % _format_percent(value))
+			"base_crit_rate":
+				effects.append("暴击几率 +%s%%" % _format_percent(value))
+			"base_crit_dmg":
+				effects.append("暴击伤害 +%s%%" % _format_percent(value))
+			"round_time":
+				effects.append("单局时间 +%s 秒" % value_text)
+			"spawn_interval":
+				effects.append("刷怪间隔 +%s 秒" % value_text)
+			"spawn_per_wave":
+				effects.append("刷怪数量 +%s" % value_text)
 			_:
 				effects.append("%s +%s" % [attr, value_text])
 
 	if effects.is_empty():
 		return "本级没有普通属性变化"
 	return "本级效果：%s" % "；".join(effects)
+
+
+## 把 0~1 的比例值转为百分比整数文本（0.05 -> "5"）。
+func _format_percent(value: float) -> String:
+	return str(roundi(value * 100.0))
 
 
 # ---- 局内 Buff：选择、生效与暂停恢复 ----

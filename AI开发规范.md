@@ -275,6 +275,7 @@ battle.tscn (Node2D + battle_manager.gd)
 
 ### 10.6 局内 Buff 规范
 - 击杀敌人获得经验（`Enemy.exp` 列）→ 经验攒满 `Exp(level) = exp_base × level^exp_power + exp_linear × (level-1)` 后升级并扣除该级所需经验，每次升级触发 `buff_choice_count` 选 1（3 选 1）。
+- `buffLevel` 表使用 `changeAttr1~4`/`attrValue1~4` + 每级 `desc`（策划效果文案，升级卡面直接展示）；属性 key 与技能表共用同一入口（`_apply_attribute_change`），支持 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg` 等）。
 - Buff 效果为**局内临时**，保存在战斗管理器内存字典中，**绝不写 SaveSystem**。
 
 ### 10.7 战斗循环结束
