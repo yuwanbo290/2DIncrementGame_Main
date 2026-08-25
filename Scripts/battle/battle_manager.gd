@@ -29,6 +29,8 @@ const CONFIG_ATTR_KEYS: Array[String] = [
 	"round_time",
 	"spawn_interval",
 	"spawn_per_wave",
+	"exp_gain_rate",
+	"coin_gain_rate",
 ]
 
 var config: BaseConfig
@@ -405,6 +407,10 @@ func _describe_buff_level(level_row: Dictionary) -> String:
 				effects.append("刷怪间隔 +%s 秒" % value_text)
 			"spawn_per_wave":
 				effects.append("刷怪数量 +%s" % value_text)
+			"exp_gain_rate":
+				effects.append("经验获取 +%s%%" % _format_percent(value))
+			"coin_gain_rate":
+				effects.append("金币获取 +%s%%" % _format_percent(value))
 			_:
 				effects.append("%s +%s" % [attr, value_text])
 
@@ -612,9 +618,10 @@ func _fire_burst_round(round_index: int, dir: Vector2) -> void:
 
 func _on_enemy_died(enemy: Enemy) -> void:
 	_enemies.erase(enemy)
-	_gold += enemy.coin
+	# 金币与经验按 coin_gain_rate / exp_gain_rate 加成（Buff / 局外技能可提升）
+	_gold += enemy.coin * (1.0 + config.coin_gain_rate)
 	_kills += 1
-	_add_exp(enemy.exp_value)
+	_add_exp(enemy.exp_value * (1.0 + config.exp_gain_rate))
 	if enemy.is_boss:
 		_on_boss_defeated()
 	else:

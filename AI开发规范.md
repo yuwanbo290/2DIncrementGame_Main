@@ -265,7 +265,7 @@ battle.tscn (Node2D + battle_manager.gd)
 ### 10.4 技能系统规范
 - 技能树：`Skill` 表（`Id`/`previouId`/`maxLevel`）定义解锁前置与满级；`skillLevel` 表定义每级消耗与效果（`changeAttr1~4` + `attrValue1~4` + `desc` + `specialEffect`）。
 - 局外养成界面为**左侧技能树 + 右侧详情**：左侧按 `previouId` 分层（缺失/0 = 根节点，BFS 算深度）排布可点击节点（点击选中金色高亮），前置连线由 `skill_tree_canvas.gd`（`SkillTreeCanvas._draw`）绘制，解锁亮绿/未解锁暗灰；右侧读取 Skill（名称/描述）与 skillLevel（下一级效果 `desc`/费用）表文本展示，并放升级按钮。
-- 属性改动用 `changeAttr*` 字符串映射到运行时属性（如 `atk`/`bulletCount`/`ricochetCount`/`burstCount`），也支持直接写 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg`/`round_time`/`spawn_interval`/`spawn_per_wave`，战斗开始应用、退出恢复）；特殊能力用 `specialEffect` key 分发（如 `UnlockSuperBullet`）。
+- 属性改动用 `changeAttr*` 字符串映射到运行时属性（如 `atk`/`bulletCount`/`ricochetCount`/`burstCount`），也支持直接写 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg`/`round_time`/`spawn_interval`/`spawn_per_wave`/`exp_gain_rate`/`coin_gain_rate`，战斗开始应用、退出恢复）；特殊能力用 `specialEffect` key 分发（如 `UnlockSuperBullet`）。
 - 局外养成的技能等级存 `skill_levels`（落盘）；局内技能/临时增益不落盘；局外存金币 + 技能等级 + 统计。
 
 ### 10.5 波次 / Boss 规范

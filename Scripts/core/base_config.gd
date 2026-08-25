@@ -21,9 +21,9 @@ extends Resource
 
 @export_category("刷怪")
 ## 初始刷怪间隔（秒）
-@export var spawn_interval: float = 0.6
+@export var spawn_interval: float = 2.0
 ## 每次刷出的哥布林数量
-@export var spawn_per_wave: int = 2
+@export var spawn_per_wave: int = 1
 
 @export_category("局内Buff")
 ## 每次升级 3 选 1 的可选数量
@@ -31,11 +31,17 @@ extends Resource
 
 @export_category("经验")
 ## 升级所需经验公式：Exp(level) = exp_base × level^exp_power + exp_linear × (level-1)
-@export var exp_base: float = 4.0
+@export var exp_base: float = 6.0
 ## 经验公式的指数系数
-@export var exp_power: float = 1.3
+@export var exp_power: float = 1.4
 ## 经验公式的线性项系数
-@export var exp_linear: float = 5.0
+@export var exp_linear: float = 8.0
+
+@export_category("局外收益")
+## 击杀经验获得加成（百分比小数，0.1 = +10%）
+@export var exp_gain_rate: float = 0.0
+## 击杀金币获得加成（百分比小数，0.1 = +10%）
+@export var coin_gain_rate: float = 0.0
 
 @export_category("战斗")
 ## 子弹飞行速度（像素/秒）
