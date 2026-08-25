@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_baseconfig")
-base_attack = 2.0
-spawn_interval = 0.8
+spawn_interval = 2.0
+spawn_per_wave = 1
 bullet_speed = 1080.0
 spread_half_angle = 0.06
