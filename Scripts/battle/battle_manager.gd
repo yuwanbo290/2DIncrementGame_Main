@@ -13,8 +13,7 @@ const TABLE_WAVE_BOSS := "waveBoss"
 const TABLE_BUFF := "Buff"
 const TABLE_BUFF_LEVEL := "buffLevel"
 
-## Buff 表使用 changeAttr1~4 / attrValue1~4（含每级 desc 文案）；skillLevel 表为 changeAttr1~3。
-## 槽位数取两者最大值，统一由同一个属性入口处理。
+## Buff 与 skillLevel 表均使用 changeAttr1~4 / attrValue1~4（含每级 desc 文案），统一由同一个属性入口处理。
 const ATTRIBUTE_SLOT_COUNT := 4
 
 ## 多轮连射的轮间间隔（秒）
@@ -356,6 +355,7 @@ func _get_buff_level_row(buff_id: int, level: int) -> Dictionary:
 
 
 ## 将表格行转换成 UI 所需的只读显示数据；UI 不直接依赖 TableDB 或局内状态。
+## 描述只使用配置文本（buffLevel.desc，缺失时自动拼接），不再叠加 Buff 表通用描述。
 func _build_buff_choice_data(buff_row: Dictionary) -> Dictionary:
 	var buff_id: int = int(buff_row.get("Id", 0))
 	var next_level: int = int(_buff_levels.get(buff_id, 0)) + 1
@@ -363,10 +363,9 @@ func _build_buff_choice_data(buff_row: Dictionary) -> Dictionary:
 	return {
 		"id": buff_id,
 		"name": str(buff_row.get("buffName", "未知升级")),
-		"description": str(buff_row.get("desc", "")),
+		"description": _describe_buff_level(level_row),
 		"next_level": next_level,
 		"max_level": int(buff_row.get("maxLevel", next_level)),
-		"effect_text": _describe_buff_level(level_row),
 	}
 
 

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://ch58hjutyxuwu"]
+[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://ccfnvjoarjaem"]
 
 [ext_resource type="Script" uid="uid://d04tnnay5eyuf" path="res://Scripts/core/table_resource.gd" id="1_qbriq"]
 

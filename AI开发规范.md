@@ -263,8 +263,8 @@ battle.tscn (Node2D + battle_manager.gd)
 - 子弹独立场景/脚本，按 `spread` 随机散布，按 `range` 判定消亡。
 
 ### 10.4 技能系统规范
-- 技能树：`Skill` 表（`Id`/`previouId`/`maxLevel`）定义解锁前置与满级；`skillLevel` 表定义每级消耗与效果（`changeAttr1~3` + `attrValue1~3` + `specialEffect`）。
-- 局外养成界面为**传统技能树**：按 `previouId` 分层（缺失/0 = 根节点，BFS 算深度），同层水平均分整层居中；节点面板显示名称/描述/等级/升级按钮，前置连线由 `skill_tree_canvas.gd`（`SkillTreeCanvas._draw`）绘制，解锁亮绿/未解锁暗灰。
+- 技能树：`Skill` 表（`Id`/`previouId`/`maxLevel`）定义解锁前置与满级；`skillLevel` 表定义每级消耗与效果（`changeAttr1~4` + `attrValue1~4` + `desc` + `specialEffect`）。
+- 局外养成界面为**左侧技能树 + 右侧详情**：左侧按 `previouId` 分层（缺失/0 = 根节点，BFS 算深度）排布可点击节点（点击选中金色高亮），前置连线由 `skill_tree_canvas.gd`（`SkillTreeCanvas._draw`）绘制，解锁亮绿/未解锁暗灰；右侧读取 Skill（名称/描述）与 skillLevel（下一级效果 `desc`/费用）表文本展示，并放升级按钮。
 - 属性改动用 `changeAttr*` 字符串映射到运行时属性（如 `atk`/`bulletCount`/`ricochetCount`/`burstCount`），也支持直接写 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg`/`round_time`/`spawn_interval`/`spawn_per_wave`，战斗开始应用、退出恢复）；特殊能力用 `specialEffect` key 分发（如 `UnlockSuperBullet`）。
 - 局外养成的技能等级存 `skill_levels`（落盘）；局内技能/临时增益不落盘；局外存金币 + 技能等级 + 统计。
 
@@ -275,7 +275,7 @@ battle.tscn (Node2D + battle_manager.gd)
 
 ### 10.6 局内 Buff 规范
 - 击杀敌人获得经验（`Enemy.exp` 列）→ 经验攒满 `Exp(level) = exp_base × level^exp_power + exp_linear × (level-1)` 后升级并扣除该级所需经验，每次升级触发 `buff_choice_count` 选 1（3 选 1）。
-- `buffLevel` 表使用 `changeAttr1~4`/`attrValue1~4` + 每级 `desc`（策划效果文案，升级卡面直接展示）；属性 key 与技能表共用同一入口（`_apply_attribute_change`），支持 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg` 等）。
+- `buffLevel` 表使用 `changeAttr1~4`/`attrValue1~4` + 每级 `desc`；升级卡面描述**只读取该配置文本**（不再叠加 Buff 表通用描述），属性 key 与技能表共用同一入口（`_apply_attribute_change`），支持 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg` 等）。
 - Buff 效果为**局内临时**，保存在战斗管理器内存字典中，**绝不写 SaveSystem**。
 
 ### 10.7 战斗循环结束

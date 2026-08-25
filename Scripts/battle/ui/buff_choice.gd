@@ -81,13 +81,13 @@ func hide_choices() -> void:
 # ---- 卡片文本组装 ----
 
 ## 固定卡片使用一个 Button 的多行文字显示全部信息，从而减少重复节点和脚本数量。
+## 描述只显示配置文本（buffLevel.desc），不叠加其他来源。
 func _format_card_text(choice: Dictionary) -> String:
-	return "%s\n升级至 Lv.%d / %d\n\n%s\n\n%s" % [
+	return "%s\n升级至 Lv.%d / %d\n\n%s" % [
 		str(choice.get("name", "未知升级")),
 		int(choice.get("next_level", 1)),
 		int(choice.get("max_level", 1)),
 		str(choice.get("description", "")),
-		str(choice.get("effect_text", "")),
 	]
 
 
