@@ -63,7 +63,7 @@ func setup(row: Dictionary, boss: bool = false) -> void:
 	var body_color: Color = BOSS_COLOR if is_boss else PALETTE[enemy_id % PALETTE.size()]
 
 	# 表内保留完整名称供日志/图鉴使用；战斗常驻标签去掉公共前缀，避免群怪时文字大面积重叠。
-	var display_name: String = str(row.get("goblinName", "哥布林"))
+	var display_name: String = str(row.get("enemyName", "哥布林"))
 	if is_boss:
 		scale = Vector2.ONE * BOSS_SCALE
 	else:

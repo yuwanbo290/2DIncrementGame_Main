@@ -69,7 +69,7 @@
 ├── Textures/
 │   ├── ui/                       # UI 纹理（menu_bg / btn_* / icon_* / goblin_emblem）
 │   ├── PNG/                      # 通用像素图标素材库（勿乱放，仅供素材）
-│   ├── goblins/                  # [未来] 哥布林敌人纹理与 SpriteFrames
+│   ├── enemies/                  # 敌人纹理与 SpriteFrames（生成素材位于 generated/）
 │   └── weapons/                  # [未来] 武器/子弹纹理
 ├── Audio/                        # [未来] 音频（music/ sfx/）
 └── addons/table_exporter/        # 导表插件（勿改，除非用户要求）
@@ -253,7 +253,7 @@ battle.tscn (Node2D + battle_manager.gd)
 - 敌人、子弹、掉落物各自独立脚本 + 独立场景，由管理器统一 spawn/管理。
 
 ### 10.2 哥布林（敌人）规范
-- 属性从 `Enemy` 表读：`enemyID`/`goblinName`/`healthNum`/`coin`/`exp`/`moveSpeed`/`texture`/`spriteFrames`。
+- 属性从 `Enemy` 表读：`enemyID`/`enemyName`/`healthNum`/`coin`/`exp`/`moveSpeed`/`texture`/`spriteFrames`。
 - 敌人节点统一挂 `enemy.gd`，实例化后注入表行数据（**不硬编码数值**）。
 - 死亡：给金币（`coin` 字段），累加击杀统计（`SaveSystem.set_stat("best_kills", ...)`），局内计数，局结束落盘。
 
@@ -367,7 +367,7 @@ battle.tscn (Node2D + battle_manager.gd)
 ### 15.2 待补（P2，随功能开发补齐）
 5. **关卡与 Boss 待实现**：核心射击、哥布林刷怪和局内 Buff 已完成；正式关卡波数、击杀门槛与关底 Boss 仍需在设计确认后开发。
 6. **商店/武器系统**：已基于 `shop` / `weapons` 表实现（购买 + 装备，落盘 `owned_weapons`/`equipped_weapon`）；数值待用户配置。
-7. **哥布林正式美术资源缺失**：`Enemy.xlsx` 已预留 `goblin_scout_1`/`goblin_warrior_1`/`fast` 资源键，当前敌人仍使用代码绘制的尖耳色块占位造型。
+7. **敌人美术资源待接入**：`Textures/enemies/generated/` 已有 17 套生成素材，但 `Enemy.xlsx.texture` 当前为空，敌人仍使用代码绘制的尖耳色块占位造型。
 8. **音频缺失**：设置页有音量 + AudioServer 引用 Master/Music/SFX 总线，但 `Audio/` 无音频文件。
 9. **版本控制**：Git 基线已建立；提交时继续排除 `.godot/`、临时验证文件与本地用户设置。
 

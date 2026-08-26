@@ -1,6 +1,6 @@
 # 哥布林动画资产说明
 
-本目录按 `data/Enemy.xlsx` 的 `Goblins` 表逐行生成，共 17 个敌人。
+本目录按 `data/Enemy.xlsx` 的 `Enemy` 表逐行生成，共 17 个敌人。
 
 ## 最终资源规格
 
