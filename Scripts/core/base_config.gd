@@ -24,6 +24,8 @@ extends Resource
 @export var spawn_interval: float = 2.0
 ## 每次刷出的哥布林数量
 @export var spawn_per_wave: int = 1
+## 场上同时存在的敌人数量上限
+@export var max_enemies: int = 15
 
 @export_category("局内Buff")
 ## 每次升级 3 选 1 的可选数量

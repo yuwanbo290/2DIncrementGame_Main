@@ -6,8 +6,8 @@ extends Control
 
 
 ## 与 out_of_battle_upgrade.gd 的节点尺寸保持一致
-const NODE_W := 200.0
-const NODE_H := 160.0
+const NODE_W := 160.0
+const NODE_H := 120.0
 ## 已解锁连线的颜色
 const LINE_ACTIVE := Color(0.7, 0.85, 0.4, 0.9)
 ## 未解锁连线的颜色
@@ -18,6 +18,35 @@ const LINE_LOCKED := Color(0.35, 0.35, 0.4, 0.6)
 var node_pos: Dictionary = {}
 ## skill_id -> 父 skill_id（根节点为 0）
 var parent_map: Dictionary = {}
+
+## 拖拽滚动：按住画布空白处拖动可平移 ScrollContainer 内容
+var _scroll: ScrollContainer
+var _dragging: bool = false
+var _last_mouse: Vector2 = Vector2.ZERO
+
+
+## 注入拖拽滚动目标（ScrollContainer）。
+func setup_drag(scroll: ScrollContainer) -> void:
+	_scroll = scroll
+
+
+func _gui_input(event: InputEvent) -> void:
+	if _scroll == null:
+		return
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT:
+			_dragging = mb.pressed
+			_last_mouse = mb.position
+			accept_event()
+	elif event is InputEventMouseMotion:
+		var motion := event as InputEventMouseMotion
+		if _dragging:
+			var delta: Vector2 = motion.position - _last_mouse
+			_last_mouse = motion.position
+			_scroll.scroll_horizontal -= int(delta.x)
+			_scroll.scroll_vertical -= int(delta.y)
+			accept_event()
 
 
 ## 注入布局数据并重绘。

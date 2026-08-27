@@ -25,6 +25,7 @@ func on_create():
 
 func on_open():
 	super()
+	_build_stats_panel()
 	_refresh_equipped_label()
 	_build_weapon_list()
 
@@ -36,6 +37,45 @@ func on_close():
 func on_destroy():
 	super()
 	_clear_weapon_list()
+
+
+## 在武器列表上方显示当前玩家属性（基础 + 当前武器 + 局外技能，不含局内 Buff）。
+func _build_stats_panel() -> void:
+	var vbox: VBoxContainer = $MainContainer/Panel/VBox as VBoxContainer
+	if vbox == null:
+		return
+	# 重建：移除旧属性面板
+	var old: Node = vbox.get_node_or_null("StatsPanel")
+	if old:
+		old.queue_free()
+
+	var panel := PanelContainer.new()
+	panel.name = "StatsPanel"
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.1, 0.14, 0.2, 0.95)
+	style.border_color = Color(0.3, 0.4, 0.5, 1)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	panel.add_theme_stylebox_override("panel", style)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_bottom", 12)
+
+	var label := Label.new()
+	label.text = PlayerStatsService.format_stats(PlayerStatsService.get_meta_stats())
+	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_color_override("font_color", COLOR_STAT)
+	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	label.add_theme_constant_override("outline_size", 2)
+
+	margin.add_child(label)
+	panel.add_child(margin)
+	vbox.add_child(panel)
+	# 放到武器列表上方
+	vbox.move_child(panel, 0)
 
 
 func _refresh_equipped_label() -> void:

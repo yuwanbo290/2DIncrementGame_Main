@@ -15,7 +15,7 @@ rows = Array[Dictionary]([{
 "Id": 2,
 "desc": "攻击弹道+1",
 "maxLevel": 3,
-"previouId": 5,
+"previouId": 1,
 "skillName": "分裂射击"
 }, {
 "Id": 3,
@@ -39,13 +39,13 @@ rows = Array[Dictionary]([{
 "Id": 6,
 "desc": "提升攻击暴击概率",
 "maxLevel": 5,
-"previouId": 1,
+"previouId": 3,
 "skillName": "幸运一击"
 }, {
 "Id": 7,
 "desc": "提升攻击暴击倍率",
 "maxLevel": 5,
-"previouId": 6,
+"previouId": 3,
 "skillName": "超强施法"
 }, {
 "Id": 8,
@@ -62,7 +62,13 @@ rows = Array[Dictionary]([{
 }, {
 "Id": 10,
 "desc": "提升每次刷怪数量",
-"maxLevel": 5,
+"maxLevel": 3,
 "previouId": 9,
 "skillName": "嗜血吸引"
+}, {
+"Id": 11,
+"desc": "攻击轮数+1",
+"maxLevel": 2,
+"previouId": 1,
+"skillName": "多重射击"
 }])

@@ -44,8 +44,18 @@ var move_speed: float = 40.0
 ## 是否为 Boss（waveBoss 表驱动）：放大体型、深红配色、血条常驻
 var is_boss: bool = false
 
+## 随机更换移动方向的最小 / 最大间隔（秒）：敌人随机游走，不做规则轨迹。
+const MIN_DIR_CHANGE_TIME := 0.6
+const MAX_DIR_CHANGE_TIME := 2.5
+## 屏幕边界反弹留白（像素，不含身体半径）
+const SCREEN_MARGIN := 6.0
+
+## 移动方向（随机游走，屏幕边界反弹）
 var _move_dir: Vector2 = Vector2.RIGHT
+## 随机移动计时（到达 _dir_change_interval 时更换方向）
 var _move_time: float = 0.0
+## 下次更换移动方向的随机间隔
+var _dir_change_interval: float = 1.0
 var _health_bar: Polygon2D
 var _health_bg: Polygon2D
 
@@ -176,12 +186,34 @@ func take_damage(amount: float) -> void:
 
 
 func _process(delta: float) -> void:
+	# 随机游走：每隔随机时长更换一次移动方向（不做规则轨迹）
 	_move_time += delta
+	if _move_time >= _dir_change_interval:
+		_move_time = 0.0
+		_dir_change_interval = randf_range(MIN_DIR_CHANGE_TIME, MAX_DIR_CHANGE_TIME)
+		_move_dir = Vector2.from_angle(randf() * TAU)
 	position += _move_dir * move_speed * delta
-	# 奇数 enemyID：正弦摆动（不同移动轨迹）
-	if int(enemy_row.get("enemyID", 1)) % 2 == 1:
-		position.x += sin(_move_time * 2.2) * 30.0 * delta
-	# 超出战斗区域后移除
+	# 屏幕边界反弹，保证敌人始终留在屏幕内
+	_bounce_in_viewport()
+
+
+## 碰到屏幕边界时反弹（按缩放后的体型计算留白），敌人不会离开屏幕范围。
+func _bounce_in_viewport() -> void:
 	var view: Vector2 = get_viewport_rect().size if get_viewport() != null else Vector2(1920, 1080)
-	if position.x < -80.0 or position.x > view.x + 80.0 or position.y < -80.0 or position.y > view.y + 80.0:
-		queue_free()
+	var radius: float = BODY_RADIUS * scale.x
+	var left: float = radius + SCREEN_MARGIN
+	var right: float = view.x - radius - SCREEN_MARGIN
+	var top: float = radius + SCREEN_MARGIN
+	var bottom: float = view.y - radius - SCREEN_MARGIN
+	if position.x < left:
+		position.x = left
+		_move_dir.x = absf(_move_dir.x)
+	elif position.x > right:
+		position.x = right
+		_move_dir.x = -absf(_move_dir.x)
+	if position.y < top:
+		position.y = top
+		_move_dir.y = absf(_move_dir.y)
+	elif position.y > bottom:
+		position.y = bottom
+		_move_dir.y = -absf(_move_dir.y)

@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://Scripts/battle/battle_manager.gd" id="1_bm"]
 [ext_resource type="Texture2D" path="res://Textures/ui/btn_plain.png" id="2_btn"]
 [ext_resource type="PackedScene" path="res://Scenes/battle/ui/buff_choice.tscn" id="3_buff_choice"]
 [ext_resource type="PackedScene" path="res://Scenes/battle/ui/battle_result.tscn" id="4_result"]
+[ext_resource type="PackedScene" path="res://Scenes/battle/ui/pause_menu.tscn" id="5_pause"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_exp_bg"]
 bg_color = Color(0.08, 0.1, 0.14, 0.92)
@@ -83,14 +84,14 @@ text = "阶段 1"
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="BackBtn" type="TextureButton" parent="UI/TopBar"]
+[node name="PauseBtn" type="TextureButton" parent="UI/TopBar"]
 layout_mode = 2
 custom_minimum_size = Vector2(110, 48)
 texture_normal = ExtResource("2_btn")
 ignore_texture_size = true
 stretch_mode = 6
 
-[node name="BackLabel" type="Label" parent="UI/TopBar/BackBtn"]
+[node name="PauseLabel" type="Label" parent="UI/TopBar/PauseBtn"]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -98,7 +99,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 18
-text = "返回"
+text = "暂停"
 vertical_alignment = 1
 horizontal_alignment = 1
 mouse_filter = 2
@@ -196,3 +197,5 @@ mouse_filter = 2
 [node name="BuffChoiceUI" parent="UI" instance=ExtResource("3_buff_choice")]
 
 [node name="BattleResultUI" parent="UI" instance=ExtResource("4_result")]
+
+[node name="PauseMenuUI" parent="UI" instance=ExtResource("5_pause")]

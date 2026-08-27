@@ -73,9 +73,12 @@ var _exp: float = 0.0
 var _level: int = 1
 ## 弹层打开期间阻止重复触发和快速重复选择。
 var _is_choosing_buff: bool = false
+## 本局 Buff 提供的属性加成明细（attr key -> 累计值），暂停界面以（）展示
+var _buff_bonus: Dictionary = {}
 
 @onready var _buff_choice_ui: BuffChoiceUI = $UI/BuffChoiceUI as BuffChoiceUI
 @onready var _result_ui: BattleResultUI = $UI/BattleResultUI as BattleResultUI
+@onready var _pause_ui: PauseMenuUI = $UI/PauseMenuUI as PauseMenuUI
 
 
 func _ready() -> void:
@@ -98,10 +101,15 @@ func _ready() -> void:
 
 	_max_stage = _get_max_stage()
 
-	# 返回按钮：放弃本局直接回备战（不结算）
-	var back_btn: TextureButton = $UI/TopBar/BackBtn as TextureButton
-	if back_btn:
-		back_btn.pressed.connect(_on_back_pressed)
+	# 暂停按钮：打开暂停菜单（显示玩家属性，可继续 / 返回备战）
+	var pause_btn: TextureButton = $UI/TopBar/PauseBtn as TextureButton
+	if pause_btn:
+		pause_btn.pressed.connect(_on_pause_pressed)
+	if _pause_ui:
+		_pause_ui.resume_pressed.connect(_on_pause_resume)
+		_pause_ui.quit_pressed.connect(_on_pause_quit)
+	else:
+		push_error("[战斗] battle.tscn 缺少 PauseMenuUI，暂停菜单无法显示")
 	if _buff_choice_ui:
 		_buff_choice_ui.buff_selected.connect(_on_buff_selected)
 	else:
@@ -161,6 +169,46 @@ func _on_back_pressed() -> void:
 	_close_buff_choice()
 	UIManager.clear_all()
 	get_tree().change_scene_to_file("res://Scenes/ui/preparation.tscn")
+
+
+# ---- 暂停菜单 ----
+
+## 打开暂停菜单：展示当前玩家属性（含 Buff 括号加成）并暂停场景树。
+func _on_pause_pressed() -> void:
+	if _finished or _is_choosing_buff or _is_result_open:
+		return
+	if _pause_ui:
+		_pause_ui.show_menu(get_in_run_stats())
+	get_tree().paused = true
+
+
+## 继续战斗：关闭暂停菜单并恢复。
+func _on_pause_resume() -> void:
+	if _pause_ui:
+		_pause_ui.hide_menu()
+	get_tree().paused = false
+
+
+## 从暂停菜单返回备战：放弃本局（不结算）。
+func _on_pause_quit() -> void:
+	if _pause_ui:
+		_pause_ui.hide_menu()
+	get_tree().paused = false
+	_on_back_pressed()
+
+
+## 局内当前属性汇总（含武器 + 局外技能 + 局内 Buff），并附带 Buff 加成明细（暂停界面（）展示用）。
+func get_in_run_stats() -> Dictionary:
+	var base := {
+		"base_attack": config.base_attack + _damage_bonus,  # atk 加成并入攻击力
+		"base_attack_speed": config.base_attack_speed,
+		"base_crit_rate": config.base_crit_rate,
+		"base_crit_dmg": config.base_crit_dmg,
+		"round_time": config.round_time,
+	}
+	var stats := PlayerStatsService.compute(base, {}, _weapon, _bullet_count, _burst_rounds + 1)
+	stats["buff_bonus"] = _buff_bonus
+	return stats
 
 
 ## 备份可被技能增强的 base_config 字段原始值（战斗退出时恢复，避免污染全局配置）。
@@ -357,17 +405,20 @@ func _get_buff_level_row(buff_id: int, level: int) -> Dictionary:
 
 
 ## 将表格行转换成 UI 所需的只读显示数据；UI 不直接依赖 TableDB 或局内状态。
-## 描述只使用配置文本（buffLevel.desc，缺失时自动拼接），不再叠加 Buff 表通用描述。
+## 描述使用配置文本（buffLevel.desc），并展示「上一级 → 下一级」效果（0 级上一级显示「无」）。
 func _build_buff_choice_data(buff_row: Dictionary) -> Dictionary:
 	var buff_id: int = int(buff_row.get("Id", 0))
-	var next_level: int = int(_buff_levels.get(buff_id, 0)) + 1
-	var level_row: Dictionary = _get_buff_level_row(buff_id, next_level)
+	var current_level: int = int(_buff_levels.get(buff_id, 0))
+	var next_level: int = current_level + 1
+	var prev_row: Dictionary = _get_buff_level_row(buff_id, current_level)
+	var next_row: Dictionary = _get_buff_level_row(buff_id, next_level)
 	return {
 		"id": buff_id,
 		"name": str(buff_row.get("buffName", "未知升级")),
-		"description": _describe_buff_level(level_row),
 		"next_level": next_level,
 		"max_level": int(buff_row.get("maxLevel", next_level)),
+		"prev_desc": "无" if current_level <= 0 or prev_row.is_empty() else _describe_buff_level(prev_row),
+		"next_desc": _describe_buff_level(next_row),
 	}
 
 
@@ -446,6 +497,8 @@ func _apply_next_buff_level(buff_id: int) -> bool:
 		push_warning("[战斗] 无法应用 Buff Id=%d：缺少 buffLevel=%d" % [buff_id, next_level])
 		return false
 
+	# 先记录 Buff 提供的属性加成明细（暂停界面以（）展示），再应用效果
+	_accumulate_buff_bonus(level_row)
 	_apply_attribute_slots(level_row)
 	var special_effect: String = str(level_row.get("specialEffect", ""))
 	if special_effect != "":
@@ -453,6 +506,15 @@ func _apply_next_buff_level(buff_id: int) -> bool:
 
 	_buff_levels[buff_id] = next_level
 	return true
+
+
+## 累计本局 Buff 提供的属性加成明细（attr key -> 累计值，暂停界面括号展示用）。
+func _accumulate_buff_bonus(level_row: Dictionary) -> void:
+	for index in range(1, ATTRIBUTE_SLOT_COUNT + 1):
+		var attr: String = str(level_row.get("changeAttr%d" % index, ""))
+		var value: float = float(level_row.get("attrValue%d" % index, 0.0))
+		if attr != "":
+			_buff_bonus[attr] = _buff_bonus.get(attr, 0.0) + value
 
 
 ## 关闭弹层并解除暂停。所有离开战斗的路径也调用此方法，防止下一场景保持暂停。
@@ -475,6 +537,9 @@ func _get_max_stage() -> int:
 
 
 func _spawn_enemy() -> void:
+	# 场上敌人数量达到上限时不再刷怪（等击杀腾出位置）
+	if config != null and _enemies.size() >= config.max_enemies:
+		return
 	var candidates: Array[Dictionary] = []
 	var total_weight: int = 0
 	for row in TableDB.rows_of(TABLE_SPAWN):
@@ -591,12 +656,14 @@ func _on_player_fire(dir: Vector2) -> void:
 ## 一次射击总轮数 = 1 + _burst_rounds（Buff 属性 burstCount 提供的额外轮数）。
 func _fire_burst_round(round_index: int, dir: Vector2) -> void:
 	var count: int = maxi(_bullet_count, 1)
+	# 有效暴击：暴击率超过 100% 时，每 1% 溢出转化为 1.5% 暴击伤害（隐藏机制）
+	var crit := PlayerStatsService.get_effective_crit(config.base_crit_rate, config.base_crit_dmg)
 	for i in count:
 		# 每发子弹独立判定暴击：命中暴击则本发伤害按暴击倍率放大
 		var damage: float = get_total_damage()
-		var is_crit: bool = randf() < config.base_crit_rate
+		var is_crit: bool = randf() < crit.rate
 		if is_crit:
-			damage *= config.base_crit_dmg
+			damage *= crit.dmg
 		var offset: float = (float(i) - float(count - 1) / 2.0) * config.spread_half_angle * 2.0
 		var bullet_dir: Vector2 = dir.rotated(offset)
 		var bullet: Bullet = Bullet.new()
@@ -660,12 +727,18 @@ func _process(delta: float) -> void:
 	# 每帧刷新 HUD：倒计时实时显示，最后 10 秒红闪
 	_update_hud()
 
-	# 刷怪计时（初始 spawn_interval 秒）；Boss 存活期间依旧正常刷小怪
-	_spawn_timer -= delta
-	if _spawn_timer <= 0.0:
+	# 刷怪逻辑：场上全灭时立即刷新一批；否则按 spawn_interval 间隔计时刷怪。
+	# （spawn_per_wave 与 max_enemies 共同限制单次刷怪数量）
+	if _enemies.is_empty():
 		_spawn_timer = config.spawn_interval
 		for i in config.spawn_per_wave:
 			_spawn_enemy()
+	else:
+		_spawn_timer -= delta
+		if _spawn_timer <= 0.0:
+			_spawn_timer = config.spawn_interval
+			for i in config.spawn_per_wave:
+				_spawn_enemy()
 
 	# 居中提示文本（Boss 来袭 / 波次切换 / 通关）倒计时淡出
 	_update_notice(delta)
@@ -727,7 +800,7 @@ func _update_hud() -> void:
 		gold_label.text = "金币: %d" % int(_gold)
 	var timer_label: Label = ui.get_node_or_null("TopBar/TimerLabel") as Label
 	if timer_label:
-		timer_label.text = str(ceili(_time_left))
+		timer_label.text = "体力: %d" % ceili(_time_left)
 	var kill_label: Label = ui.get_node_or_null("TopBar/KillLabel") as Label
 	if kill_label:
 		kill_label.text = "击杀: %d" % _kills
