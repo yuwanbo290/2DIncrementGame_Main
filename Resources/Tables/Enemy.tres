@@ -8,8 +8,8 @@ table_name = "Enemy"
 rows = Array[Dictionary]([{
 "coin": 1.0,
 "enemyID": 1,
+"enemyName": "小哥布林",
 "exp": 1.0,
-"goblinName": "小哥布林",
 "healthNum": 5.0,
 "moveSpeed": 20.0,
 "spriteFrames": "fast",
@@ -17,8 +17,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 5.0,
 "enemyID": 2,
+"enemyName": "哥布林",
 "exp": 3.0,
-"goblinName": "哥布林",
 "healthNum": 10.0,
 "moveSpeed": 15.0,
 "spriteFrames": "fast",
@@ -26,8 +26,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 15.0,
 "enemyID": 3,
+"enemyName": "大哥布林",
 "exp": 4.0,
-"goblinName": "大哥布林",
 "healthNum": 25.0,
 "moveSpeed": 12.0,
 "spriteFrames": "fast",
@@ -35,8 +35,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 30.0,
 "enemyID": 4,
+"enemyName": "哥布林斥候",
 "exp": 5.0,
-"goblinName": "哥布林斥候",
 "healthNum": 50.0,
 "moveSpeed": 15.0,
 "spriteFrames": "fast",
@@ -44,8 +44,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 45.0,
 "enemyID": 5,
+"enemyName": "野蛮哥布林",
 "exp": 6.0,
-"goblinName": "野蛮哥布林",
 "healthNum": 150.0,
 "moveSpeed": 15.0,
 "spriteFrames": "fast",
@@ -53,8 +53,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 60.0,
 "enemyID": 6,
+"enemyName": "哥布林战士",
 "exp": 7.0,
-"goblinName": "哥布林战士",
 "healthNum": 400.0,
 "moveSpeed": 25.0,
 "spriteFrames": "fast",
@@ -62,8 +62,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 85.0,
 "enemyID": 7,
+"enemyName": "哥布林骑士",
 "exp": 8.0,
-"goblinName": "哥布林骑士",
 "healthNum": 1000.0,
 "moveSpeed": 15.0,
 "spriteFrames": "fast",
@@ -71,8 +71,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 120.0,
 "enemyID": 8,
+"enemyName": "哥布林祭祀",
 "exp": 9.0,
-"goblinName": "哥布林祭祀",
 "healthNum": 2500.0,
 "moveSpeed": 30.0,
 "spriteFrames": "fast",
@@ -80,8 +80,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 180.0,
 "enemyID": 9,
+"enemyName": "精英哥布林",
 "exp": 10.0,
-"goblinName": "精英哥布林",
 "healthNum": 8000.0,
 "moveSpeed": 20.0,
 "spriteFrames": "fast",
@@ -89,8 +89,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 270.0,
 "enemyID": 10,
+"enemyName": "哥布林王",
 "exp": 12.0,
-"goblinName": "哥布林王",
 "healthNum": 15000.0,
 "moveSpeed": 20.0,
 "spriteFrames": "fast",
@@ -98,8 +98,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 20.0,
 "enemyID": 11,
+"enemyName": "哥布林boss1",
 "exp": 20.0,
-"goblinName": "哥布林boss1",
 "healthNum": 50.0,
 "moveSpeed": 10.0,
 "spriteFrames": "fast",
@@ -107,8 +107,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 50.0,
 "enemyID": 12,
+"enemyName": "哥布林boss2",
 "exp": 25.0,
-"goblinName": "哥布林boss2",
 "healthNum": 120.0,
 "moveSpeed": 15.0,
 "spriteFrames": "fast",
@@ -116,8 +116,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 100.0,
 "enemyID": 13,
+"enemyName": "哥布林boss3",
 "exp": 35.0,
-"goblinName": "哥布林boss3",
 "healthNum": 300.0,
 "moveSpeed": 20.0,
 "spriteFrames": "fast",
@@ -125,8 +125,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 150.0,
 "enemyID": 14,
+"enemyName": "哥布林boss4",
 "exp": 50.0,
-"goblinName": "哥布林boss4",
 "healthNum": 800.0,
 "moveSpeed": 15.0,
 "spriteFrames": "fast",
@@ -134,8 +134,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 200.0,
 "enemyID": 15,
+"enemyName": "哥布林boss5",
 "exp": 65.0,
-"goblinName": "哥布林boss5",
 "healthNum": 2000.0,
 "moveSpeed": 25.0,
 "spriteFrames": "fast",
@@ -143,8 +143,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 350.0,
 "enemyID": 16,
+"enemyName": "哥布林boss6",
 "exp": 80.0,
-"goblinName": "哥布林boss6",
 "healthNum": 8000.0,
 "moveSpeed": 20.0,
 "spriteFrames": "fast",
@@ -152,8 +152,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 500.0,
 "enemyID": 17,
+"enemyName": "哥布林boss7",
 "exp": 100.0,
-"goblinName": "哥布林boss7",
 "healthNum": 20000.0,
 "moveSpeed": 20.0,
 "spriteFrames": "fast",
@@ -161,8 +161,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 800.0,
 "enemyID": 18,
+"enemyName": "哥布林boss8",
 "exp": 120.0,
-"goblinName": "哥布林boss8",
 "healthNum": 60000.0,
 "moveSpeed": 20.0,
 "spriteFrames": "fast",
@@ -170,8 +170,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 1100.0,
 "enemyID": 19,
+"enemyName": "哥布林boss9",
 "exp": 150.0,
-"goblinName": "哥布林boss9",
 "healthNum": 120000.0,
 "moveSpeed": 20.0,
 "spriteFrames": "fast",
@@ -179,8 +179,8 @@ rows = Array[Dictionary]([{
 }, {
 "coin": 1500.0,
 "enemyID": 20,
+"enemyName": "哥布林boss10",
 "exp": 180.0,
-"goblinName": "哥布林boss10",
 "healthNum": 200000.0,
 "moveSpeed": 20.0,
 "spriteFrames": "fast",
