@@ -1,17 +1,20 @@
 class_name SkillTreeCanvas
 extends Control
-## 技能树连线画布：在技能节点之间绘制「前置 → 当前」的连线（out_of_battle_upgrade 专用）。
-## 连线颜色按前置技能是否已解锁（等级 ≥ 1）区分：已解锁苔绿、未解锁深灰绿。
+## 技能树连线画布：在六边形节点之间绘制「前置 → 当前」的连线（out_of_battle_upgrade 专用）。
+## 已升级分支为旧金、可升级分支为苔绿、未解锁分支为深灰绿。
 ## 数据由 out_of_battle_upgrade.setup() 注入：node_pos（skill_id -> 节点左上角位置）与 parent_map（skill_id -> 父 id）。
 
 
 ## 与 out_of_battle_upgrade.gd 的节点尺寸保持一致
-const NODE_W := 160.0
+const NODE_W := 112.0
 const NODE_H := 120.0
-## 已解锁连线的颜色
-const LINE_ACTIVE := Color(0.658824, 0.827451, 0.356863, 0.9)
-## 未解锁连线的颜色
-const LINE_LOCKED := Color(0.27451, 0.337255, 0.286275, 0.55)
+const HEX_TOP := 2.0
+const NODE_LINK_BOTTOM := NODE_H - 8.0
+## 技能状态连线颜色
+const LINE_UPGRADED := Color(0.901961, 0.721569, 0.290196, 0.95)
+const LINE_AVAILABLE := Color(0.658824, 0.827451, 0.356863, 0.9)
+const LINE_LOCKED := Color(0.38, 0.42, 0.39, 0.72)
+const LINE_SHADOW := Color(0.0196078, 0.027451, 0.0235294, 0.7)
 
 
 ## skill_id -> 节点左上角位置（相对本画布）
@@ -37,7 +40,12 @@ func _draw() -> void:
 		var parent_id: int = parent_map[child_id]
 		if parent_id <= 0 or not node_pos.has(parent_id) or not node_pos.has(child_id):
 			continue
-		var from: Vector2 = node_pos[parent_id] + Vector2(NODE_W / 2.0, NODE_H)
-		var to: Vector2 = node_pos[child_id] + Vector2(NODE_W / 2.0, 0.0)
-		var unlocked: bool = SaveSystem.get_skill_level(parent_id) >= 1
-		draw_line(from, to, LINE_ACTIVE if unlocked else LINE_LOCKED, 3.0)
+		var from: Vector2 = node_pos[parent_id] + Vector2(NODE_W / 2.0, NODE_LINK_BOTTOM)
+		var to: Vector2 = node_pos[child_id] + Vector2(NODE_W / 2.0, HEX_TOP)
+		var parent_upgraded: bool = SaveSystem.get_skill_level(parent_id) >= 1
+		var child_upgraded: bool = SaveSystem.get_skill_level(child_id) >= 1
+		var color: Color = LINE_UPGRADED if child_upgraded else (LINE_AVAILABLE if parent_upgraded else LINE_LOCKED)
+		draw_line(from, to, LINE_SHADOW, 5.0)
+		draw_line(from, to, color, 2.5)
+		draw_circle(from, 3.5, color)
+		draw_circle(to, 3.5, color)

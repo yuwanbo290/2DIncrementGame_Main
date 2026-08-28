@@ -6,6 +6,7 @@ class_name UIBase
 const BUTTON_THEME := preload("res://Resources/button_theme.tres")
 
 const _TWEEN_META := &"moss_ember_tween"
+const _REVEAL_TWEEN_META := &"moss_ember_reveal_tween"
 const _REDUCED_FADE_TIME := 0.08
 
 
@@ -87,7 +88,8 @@ static func bind_button(button: BaseButton) -> void:
 static func reveal_card(card: Control, index: int) -> Tween:
 	card.pivot_offset = card.size * 0.5
 	card.modulate.a = 0.0
-	var tween: Tween = _new_tween(card)
+	# 入场淡入与按钮 hover 缩放分开，避免鼠标经过时把透明度永久停在 0。
+	var tween: Tween = _new_tween(card, _REVEAL_TWEEN_META)
 	if is_reduced_motion():
 		card.scale = Vector2.ONE
 		tween.tween_property(card, "modulate:a", 1.0, _REDUCED_FADE_TIME)
@@ -142,14 +144,14 @@ static func count_label(label: Label, target: int, template: String = "%d") -> T
 	return tween
 
 
-static func _new_tween(control: Control) -> Tween:
-	var previous: Variant = control.get_meta(_TWEEN_META) if control.has_meta(_TWEEN_META) else null
+static func _new_tween(control: Control, meta_key: StringName = _TWEEN_META) -> Tween:
+	var previous: Variant = control.get_meta(meta_key) if control.has_meta(meta_key) else null
 	if previous is Tween:
 		var previous_tween: Tween = previous as Tween
 		if previous_tween.is_valid():
 			previous_tween.kill()
 	var tween: Tween = control.create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	control.set_meta(_TWEEN_META, tween)
+	control.set_meta(meta_key, tween)
 	return tween
 
 

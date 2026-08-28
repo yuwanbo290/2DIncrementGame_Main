@@ -1,32 +1,56 @@
 extends UIBase
-## 局外养成界面：左侧传统技能树 + 右侧技能详情与升级。
-## 左侧按 Skill 表 previouId 分层（缺失/0 = 根节点）排布可点击节点（点击选中，金色高亮），连线由 SkillTreeCanvas 绘制；
+## 局外养成界面：左侧六边形技能树 + 右侧技能详情与升级。
+## 左侧按 Skill 表 previouId 分层（缺失/0 = 根节点）排布图标节点，连线由 SkillTreeCanvas 绘制；
 ## 右侧读取 Skill / skillLevel 表文本展示：技能名/描述/等级/前置/下一级效果（skillLevel.desc）/升级费用与按钮。
 ## 升级消耗来自 skillLevel 表 upCost，等级存存档 skill_levels（落盘）。
 
 
 ## 技能节点尺寸（与 SkillTreeCanvas.NODE_W/H 保持一致）
-const NODE_W := 160.0
+const NODE_W := 112.0
 const NODE_H := 120.0
 ## 同层节点水平间距
-const H_GAP := 40.0
+const H_GAP := 20.0
 ## 层间垂直间距
-const V_GAP := 60.0
+const V_GAP := 42.0
 ## 画布内边距
-const PAD := 24.0
+const PAD := 72.0
 const BUTTON_SIZE := Vector2(200, 42)
 const UI_ICONS := preload("res://Textures/ui/moss_ember_icons.png")
+
+## 复用现有 32 像素图集；技能 ID 只负责选择对应图标区域。
+const SKILL_ICON_REGIONS := {
+	1: Rect2(0, 32, 32, 32),
+	2: Rect2(32, 0, 32, 32),
+	3: Rect2(64, 0, 32, 32),
+	4: Rect2(96, 0, 32, 32),
+	5: Rect2(64, 32, 32, 32),
+	6: Rect2(64, 0, 32, 32),
+	7: Rect2(0, 32, 32, 32),
+	8: Rect2(32, 32, 32, 32),
+	9: Rect2(32, 64, 32, 32),
+	10: Rect2(32, 32, 32, 32),
+	11: Rect2(32, 0, 32, 32),
+}
+
+static var HEX_OUTER: PackedVector2Array = PackedVector2Array([
+	Vector2(56, 2), Vector2(104, 23), Vector2(104, 65),
+	Vector2(56, 86), Vector2(8, 65), Vector2(8, 23),
+])
+static var HEX_INNER: PackedVector2Array = PackedVector2Array([
+	Vector2(56, 7), Vector2(99, 26), Vector2(99, 62),
+	Vector2(56, 81), Vector2(13, 62), Vector2(13, 26),
+])
 
 const COLOR_TEXT := Color(0.94902, 0.917647, 0.843137, 1)
 const COLOR_DESC := Color(0.666667, 0.713725, 0.67451, 1)
 const COLOR_GOLD := Color(0.901961, 0.721569, 0.290196, 1)
+const COLOR_AVAILABLE := Color(0.658824, 0.827451, 0.356863, 1)
 const COLOR_DISABLED := Color(0.666667, 0.713725, 0.67451, 0.65)
 const COLOR_WARN := Color(0.886275, 0.415686, 0.239216, 1)
-## 技能节点背景 / 边框（未解锁更暗；选中用金色边框）
+## 六边形内部颜色；外框颜色由已升级 / 可升级 / 未解锁状态决定。
 const PANEL_BG := Color(0.0784314, 0.101961, 0.0941176, 0.97)
 const PANEL_BG_LOCKED := Color(0.0509804, 0.0666667, 0.0588235, 0.94)
-const PANEL_BORDER := Color(0.27451, 0.337255, 0.286275, 1)
-const PANEL_BORDER_LOCKED := Color(0.188235, 0.219608, 0.192157, 0.85)
+const PANEL_BORDER_LOCKED := Color(0.36, 0.39, 0.37, 0.9)
 const BORDER_SELECTED := Color(0.901961, 0.721569, 0.290196, 1)
 
 
@@ -42,6 +66,8 @@ var _node_pos: Dictionary = {}
 var _node_buttons: Dictionary = {}
 ## 当前选中的技能 id（右侧详情 + 节点高亮）
 var _selected_skill: int = 0
+## 页面打开时居中一次；节点选择和升级重建时保留玩家拖动的位置。
+var _center_tree_on_build: bool = true
 
 @onready var _back_btn: Button = %BackBtn
 @onready var _gold_label: Label = %GoldLabel
@@ -49,7 +75,7 @@ var _selected_skill: int = 0
 
 func _ready() -> void:
 	_back_btn.pressed.connect(_on_back_pressed)
-	_canvas = $MainContainer/Panel/HBox/LeftMargin/ScrollContainer/TreeCanvas as SkillTreeCanvas
+	_canvas = $MainContainer/Panel/HBox/LeftMargin/TreeViewport/TreeCanvas as SkillTreeCanvas
 	if _canvas == null:
 		push_error("[局外养成] 缺少 TreeCanvas 画布节点")
 	_detail_vbox = $MainContainer/Panel/HBox/RightPanel/Margin/DetailVBox as VBoxContainer
@@ -60,6 +86,7 @@ func _ready() -> void:
 
 func refresh() -> void:
 	_refresh_gold()
+	_center_tree_on_build = true
 	# 默认选中第一个技能（根节点）展示详情
 	if _selected_skill <= 0:
 		var rows: Array[Dictionary] = TableDB.rows_of("Skill")
@@ -143,6 +170,7 @@ func _build_tree() -> void:
 	var canvas_w: float = PAD * 2.0 + max_layer_count * NODE_W + (max_layer_count - 1) * H_GAP
 	var canvas_h: float = PAD * 2.0 + (depth_max + 1) * NODE_H + depth_max * V_GAP
 	_canvas.custom_minimum_size = Vector2(canvas_w, canvas_h)
+	_canvas.size = Vector2(canvas_w, canvas_h)
 
 	for d in layers.keys():
 		var ids: Array = layers[d]
@@ -156,9 +184,19 @@ func _build_tree() -> void:
 
 	_canvas.setup(_node_pos, _parent_map)
 	_configure_tree_focus()
+	if _center_tree_on_build:
+		_center_tree_on_build = false
+		call_deferred("_center_tree_canvas")
 
 
-## 构建单个技能节点（可点击 Button，点击选中并在右侧展示详情）。
+## 页面打开后把自由画布放回视口中央；拖动期间不限制位置。
+func _center_tree_canvas() -> void:
+	var viewport := _canvas.get_parent() as Control
+	if viewport:
+		_canvas.position = (viewport.size - _canvas.size) / 2.0
+
+
+## 构建单个六边形技能节点；Button 继续负责原生点击、焦点与方向键交互。
 func _build_node(skill_id: int, pos: Vector2) -> void:
 	var row: Dictionary = TableDB.get_first("Skill", "Id", skill_id)
 	if row.is_empty():
@@ -168,57 +206,76 @@ func _build_node(skill_id: int, pos: Vector2) -> void:
 	var pre: int = int(row.get("previouId", 0))
 	var is_root: bool = pre <= 0
 	var unlocked: bool = is_root or SaveSystem.get_skill_level(pre) >= 1
+	var upgraded: bool = level > 0
 	var selected: bool = skill_id == _selected_skill
 
 	var btn := Button.new()
 	btn.position = pos
+	btn.size = Vector2(NODE_W, NODE_H)
 	btn.custom_minimum_size = Vector2(NODE_W, NODE_H)
-	var bg: Color = PANEL_BG if unlocked else PANEL_BG_LOCKED
-	var border: Color = BORDER_SELECTED if selected else (PANEL_BORDER if unlocked else PANEL_BORDER_LOCKED)
-	btn.add_theme_stylebox_override("normal", _make_node_style(bg, border))
-	btn.add_theme_stylebox_override("hover", _make_node_style(bg.lightened(0.05), border))
-	btn.add_theme_stylebox_override("pressed", _make_node_style(bg.darkened(0.05), border))
-	btn.add_theme_stylebox_override("focus", _make_node_focus_style())
-	if not unlocked:
-		btn.icon = _create_atlas_icon(Rect2(96, 32, 32, 32))
-		btn.add_theme_constant_override("icon_max_width", 20)
-		btn.text = "%s\n未解锁" % str(row.get("skillName", "未知"))
-	else:
-		btn.text = "%s\n等级 %d / %d" % [str(row.get("skillName", "未知")), level, max_level]
-	btn.add_theme_font_size_override("font_size", 16)
-	btn.add_theme_color_override("font_color", (COLOR_GOLD if selected else COLOR_TEXT) if unlocked else COLOR_DISABLED)
-	btn.add_theme_color_override("font_hover_color", COLOR_TEXT if unlocked else COLOR_DISABLED)
-	btn.add_theme_color_override("font_focus_color", COLOR_TEXT if unlocked else COLOR_DISABLED)
-	btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	var empty_style := StyleBoxEmpty.new()
+	for state in [&"normal", &"hover", &"pressed", &"focus"]:
+		btn.add_theme_stylebox_override(state, empty_style)
+
+	var state_color: Color = COLOR_GOLD if upgraded else (COLOR_AVAILABLE if unlocked else PANEL_BORDER_LOCKED)
+	var outer := Polygon2D.new()
+	outer.polygon = HEX_OUTER
+	outer.color = state_color
+	btn.add_child(outer)
+
+	var inner := Polygon2D.new()
+	inner.polygon = HEX_INNER
+	inner.color = PANEL_BG if unlocked else PANEL_BG_LOCKED
+	btn.add_child(inner)
+
+	if selected:
+		var selection := Line2D.new()
+		selection.points = HEX_OUTER
+		selection.add_point(HEX_OUTER[0])
+		selection.width = 2.0
+		selection.default_color = BORDER_SELECTED
+		btn.add_child(selection)
+
+	var icon_region: Rect2 = Rect2(96, 32, 32, 32) if not unlocked else SKILL_ICON_REGIONS.get(skill_id, Rect2(64, 0, 32, 32))
+	var icon := TextureRect.new()
+	icon.position = Vector2(38, 20)
+	icon.size = Vector2(36, 36)
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.texture = _create_atlas_icon(icon_region)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.modulate = COLOR_DISABLED if not unlocked else (COLOR_GOLD if upgraded else COLOR_TEXT)
+	btn.add_child(icon)
+
+	var level_label := Label.new()
+	level_label.position = Vector2(12, 58)
+	level_label.size = Vector2(88, 18)
+	level_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	level_label.text = "" if not unlocked else "%d / %d" % [level, max_level]
+	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_label.add_theme_font_size_override("font_size", 12)
+	level_label.add_theme_color_override("font_color", COLOR_GOLD if upgraded else COLOR_AVAILABLE)
+	btn.add_child(level_label)
+
+	var skill_name: String = str(row.get("skillName", "未知"))
+	var name_label := Label.new()
+	name_label.position = Vector2(0, 91)
+	name_label.size = Vector2(NODE_W, 22)
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	name_label.text = skill_name
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name_label.add_theme_font_size_override("font_size", 13)
+	name_label.add_theme_color_override("font_color", COLOR_TEXT if unlocked else COLOR_DISABLED)
+	btn.add_child(name_label)
+
+	var status_text: String = "等级 %d / %d" % [level, max_level] if unlocked else "未解锁"
+	btn.tooltip_text = "%s · %s" % [skill_name, status_text]
 	btn.pressed.connect(_on_node_pressed.bind(skill_id))
 	_canvas.add_child(btn)
 	_node_buttons[skill_id] = btn
 	UIBase.bind_button(btn)
-
-
-## 生成技能节点的 StyleBoxFlat。
-func _make_node_style(bg: Color, border: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg
-	style.border_color = border
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 8.0
-	style.content_margin_right = 8.0
-	style.content_margin_top = 6.0
-	style.content_margin_bottom = 6.0
-	return style
-
-
-## 焦点始终使用统一旧金描边，不覆盖节点自身背景与选中状态。
-func _make_node_focus_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.draw_center = false
-	style.border_color = BORDER_SELECTED
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(9)
-	return style
-
 
 ## 直接从现有图集裁切图标，避免引入额外图标管理层。
 func _create_atlas_icon(region: Rect2) -> AtlasTexture:

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scripts/ui/out_of_battle_upgrade.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://Textures/ui/menu_bg.png" id="2_bg"]
 [ext_resource type="Script" path="res://Scripts/ui/skill_tree_canvas.gd" id="4_canvas"]
-[ext_resource type="Script" path="res://Scripts/ui/drag_scroll.gd" id="5_drag"]
+[ext_resource type="Script" path="res://Scripts/ui/free_pan.gd" id="5_pan"]
 [ext_resource type="Texture2D" path="res://Textures/ui/moss_ember_icons.png" id="6_icons"]
 
 [sub_resource type="AtlasTexture" id="IconBack"]
@@ -151,15 +151,16 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MainContainer/Panel/HBox/LeftMargin"]
+[node name="TreeViewport" type="Control" parent="MainContainer/Panel/HBox/LeftMargin"]
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
-follow_focus = true
-script = ExtResource("5_drag")
+clip_contents = true
+script = ExtResource("5_pan")
 
-[node name="TreeCanvas" type="Control" parent="MainContainer/Panel/HBox/LeftMargin/ScrollContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
+[node name="TreeCanvas" type="Control" parent="MainContainer/Panel/HBox/LeftMargin/TreeViewport"]
+layout_mode = 0
+mouse_filter = 1
 script = ExtResource("4_canvas")
 
 [node name="RightPanel" type="PanelContainer" parent="MainContainer/Panel/HBox"]

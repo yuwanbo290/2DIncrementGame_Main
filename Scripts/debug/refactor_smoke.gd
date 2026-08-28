@@ -27,6 +27,43 @@ func _ready() -> void:
 		assert(instance != null, "场景实例化失败: %s" % path)
 		instance.free()
 
+	# 技能树必须为每条 Skill 数据生成一个可点击六边形节点。
+	var skill_ui: Control = load("res://Scenes/ui/out_of_battle_upgrade.tscn").instantiate() as Control
+	add_child(skill_ui)
+	await get_tree().process_frame
+	var free_pan: Control = skill_ui.get_node("MainContainer/Panel/HBox/LeftMargin/TreeViewport") as Control
+	var tree_canvas: Control = free_pan.get_node("TreeCanvas") as Control
+	var skill_nodes: Array[Node] = tree_canvas.get_children().filter(func(node: Node) -> bool: return node is Button)
+	assert(skill_nodes.size() == TableDB.rows_of("Skill").size(), "技能树节点数量与 Skill 表不一致")
+	for node in skill_nodes:
+		var hexagon: Polygon2D = node.get_child(0) as Polygon2D
+		assert(hexagon != null and hexagon.polygon.size() == 6, "技能节点必须绘制为六边形")
+	assert(tree_canvas.mouse_filter == Control.MOUSE_FILTER_PASS, "技能树空白区域必须向 FreePan 传递输入")
+	var position_before: Vector2 = tree_canvas.position
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(64, 64)
+	free_pan._gui_input(press)
+	var drag := InputEventMouseMotion.new()
+	drag.position = Vector2(24, 24)
+	free_pan._gui_input(drag)
+	assert(tree_canvas.position == position_before + Vector2(-40, -40), "技能树自由拖动未移动画布")
+	press.pressed = false
+	free_pan._gui_input(press)
+	skill_ui.free()
+
+	# 鼠标经过卡片不能取消入场淡入，否则按钮会透明但仍可点击。
+	var reveal_button := Button.new()
+	reveal_button.size = Vector2(272, 156)
+	add_child(reveal_button)
+	UIBase.bind_button(reveal_button)
+	UIBase.reveal_card(reveal_button, 1)
+	reveal_button.mouse_entered.emit()
+	await get_tree().create_timer(0.35).timeout
+	assert(is_equal_approx(reveal_button.modulate.a, 1.0), "按钮 hover 取消了卡片淡入")
+	reveal_button.free()
+
 	var base: BaseConfig = load("res://Resources/Config/base_config.tres") as BaseConfig
 	var run_config: BaseConfig = base.duplicate(true) as BaseConfig
 	var original_attack: float = base.base_attack
