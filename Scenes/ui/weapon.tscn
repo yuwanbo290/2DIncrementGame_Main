@@ -1,20 +1,20 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://Scripts/ui/weapon.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://Textures/ui/menu_bg.png" id="2_bg"]
-[ext_resource type="Script" path="res://Scripts/ui/drag_scroll.gd" id="4_drag"]
+[ext_resource type="Script" path="res://Scripts/ui/drag_scroll.gd" id="2_drag"]
+[ext_resource type="Texture2D" path="res://Textures/ui/moss_ember_icons.png" id="3_icons"]
 
-[sub_resource type="StyleBoxFlat" id="1_panel"]
-bg_color = Color(0.08, 0.1, 0.14, 0.92)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3, 0.4, 0.5, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="AtlasTexture" id="IconBack"]
+atlas = ExtResource("3_icons")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="IconWeapon"]
+atlas = ExtResource("3_icons")
+region = Rect2(0, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="IconUpgrade"]
+atlas = ExtResource("3_icons")
+region = Rect2(64, 32, 32, 32)
 
 [node name="Weapon" type="Control"]
 layout_mode = 3
@@ -25,112 +25,168 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Bg" type="TextureRect" parent="."]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("2_bg")
-stretch_mode = 6
-
-[node name="TopBar" type="HBoxContainer" parent="."]
-layout_mode = 0
-anchor_right = 1.0
-offset_bottom = 60.0
-theme_override_constants/separation = 15
-
-[node name="BackBtn" type="Button" parent="TopBar"]
-custom_minimum_size = Vector2(110, 48)
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 18
-text = "返回"
-
-[node name="TitleLabel" type="Label" parent="TopBar"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 28
-text = "武器"
-horizontal_alignment = 1
-
-[node name="EquippedLabel" type="Label" parent="TopBar"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 1, 0.6, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 20
-text = "当前武器: -"
-vertical_alignment = 1
-
-[node name="MainContainer" type="MarginContainer" parent="."]
+[node name="Dimmer" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 60.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 80
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 80
-theme_override_constants/margin_bottom = 40
+mouse_filter = 0
+color = Color(0, 0, 0, 0.45)
+
+[node name="MainContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Panel" type="Panel" parent="MainContainer"]
+custom_minimum_size = Vector2(1120, 620)
 layout_mode = 2
-theme_override_styles/panel = SubResource("1_panel")
+theme_type_variation = &"FloatingPanel"
 
 [node name="VBox" type="VBoxContainer" parent="MainContainer/Panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 18.0
+offset_right = -24.0
+offset_bottom = -22.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 10
+
+[node name="TopBar" type="HBoxContainer" parent="MainContainer/Panel/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BackBtn" type="Button" parent="MainContainer/Panel/VBox/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 44)
+layout_mode = 2
+icon = SubResource("IconBack")
+icon_max_width = 22
+text = "返回"
+
+[node name="WeaponIcon" type="TextureRect" parent="MainContainer/Panel/VBox/TopBar"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = SubResource("IconWeapon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="MainContainer/Panel/VBox/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94902, 0.917647, 0.843137, 1)
+theme_override_font_sizes/font_size = 28
+text = "武器"
+vertical_alignment = 1
+
+[node name="HeaderSpacer" type="Control" parent="MainContainer/Panel/VBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EquippedIcon" type="TextureRect" parent="MainContainer/Panel/VBox/TopBar"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = SubResource("IconUpgrade")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EquippedLabel" type="Label" parent="MainContainer/Panel/VBox/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.658824, 0.827451, 0.356863, 1)
+theme_override_font_sizes/font_size = 18
+text = "当前武器: -"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="HeaderSeparator" type="HSeparator" parent="MainContainer/Panel/VBox"]
+layout_mode = 2
 
 [node name="StatsPanel" type="PanelContainer" parent="MainContainer/Panel/VBox"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("1_panel")
+theme_type_variation = &"CardPanel"
 
 [node name="StatsMargin" type="MarginContainer" parent="MainContainer/Panel/VBox/StatsPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 9
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 9
 
 [node name="StatsLabel" type="Label" parent="MainContainer/Panel/VBox/StatsPanel/StatsMargin"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.85, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.666667, 0.713725, 0.67451, 1)
+theme_override_font_sizes/font_size = 16
 text = "攻击力　：0"
+
+[node name="ColumnHeaderMargin" type="MarginContainer" parent="MainContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_right = 18
+
+[node name="ColumnHeader" type="HBoxContainer" parent="MainContainer/Panel/VBox/ColumnHeaderMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ItemHeader" type="Label" parent="MainContainer/Panel/VBox/ColumnHeaderMargin/ColumnHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.666667, 0.713725, 0.67451, 1)
+theme_override_font_sizes/font_size = 14
+text = "武器与说明"
+
+[node name="AttributeHeader" type="Label" parent="MainContainer/Panel/VBox/ColumnHeaderMargin/ColumnHeader"]
+custom_minimum_size = Vector2(290, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.666667, 0.713725, 0.67451, 1)
+theme_override_font_sizes/font_size = 14
+text = "属性"
+
+[node name="StatusHeader" type="Label" parent="MainContainer/Panel/VBox/ColumnHeaderMargin/ColumnHeader"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.666667, 0.713725, 0.67451, 1)
+theme_override_font_sizes/font_size = 14
+text = "状态"
+horizontal_alignment = 1
+
+[node name="ActionHeader" type="Label" parent="MainContainer/Panel/VBox/ColumnHeaderMargin/ColumnHeader"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.666667, 0.713725, 0.67451, 1)
+theme_override_font_sizes/font_size = 14
+text = "操作"
+horizontal_alignment = 1
 
 [node name="Margin" type="MarginContainer" parent="MainContainer/Panel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/margin_left = 15
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 15
-theme_override_constants/margin_bottom = 15
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_right = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MainContainer/Panel/VBox/Margin"]
 layout_mode = 2
 size_flags_vertical = 3
-script = ExtResource("4_drag")
+follow_focus = true
+script = ExtResource("2_drag")
 
 [node name="WeaponList" type="VBoxContainer" parent="MainContainer/Panel/VBox/Margin/ScrollContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8

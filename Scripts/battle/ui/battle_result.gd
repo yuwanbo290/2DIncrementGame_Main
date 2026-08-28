@@ -13,21 +13,32 @@ signal continue_pressed
 @onready var _gold_label: Label = %GoldLabel
 @onready var _stage_label: Label = %StageLabel
 @onready var _continue_btn: Button = %ContinueBtn
+@onready var _popup_panel: PanelContainer = %PopupPanel
+@onready var _dimmer: ColorRect = $Dimmer
+@onready var _stat_cards: Array[Control] = [
+	$SafeMargin/Center/PopupPanel/Margin/Content/StatsGrid/DamageCard,
+	$SafeMargin/Center/PopupPanel/Margin/Content/StatsGrid/KillsCard,
+	$SafeMargin/Center/PopupPanel/Margin/Content/StatsGrid/GoldCard,
+	$SafeMargin/Center/PopupPanel/Margin/Content/StatsGrid/StageCard,
+]
 
 
 func _ready() -> void:
-	_continue_btn.theme = UIBase.BUTTON_THEME
 	_continue_btn.pressed.connect(_on_continue_pressed)
+	UIBase.bind_button(_continue_btn)
 	visible = false
 
 
 ## 展示结算数据（调用方负责暂停场景树）
 func show_result(total_damage: int, kills: int, gold: int, stage: int) -> void:
-	_damage_label.text = "本局伤害：%d" % total_damage
-	_kills_label.text = "击杀数量：%d" % kills
-	_gold_label.text = "获得金币：%d" % gold
-	_stage_label.text = "结束阶段：%d" % stage
 	visible = true
+	UIBase.popup_in(_dimmer, _popup_panel)
+	for index in _stat_cards.size():
+		UIBase.reveal_card(_stat_cards[index], index)
+	UIBase.count_label(_damage_label, total_damage, "%d")
+	UIBase.count_label(_kills_label, kills, "%d")
+	UIBase.count_label(_gold_label, gold, "%d")
+	UIBase.count_label(_stage_label, stage, "%d")
 	_continue_btn.grab_focus()
 
 

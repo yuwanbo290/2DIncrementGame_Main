@@ -5,6 +5,7 @@ const SCENES: Array[String] = [
 	"res://Scenes/GameManager.tscn",
 	"res://Scenes/battle.tscn",
 	"res://Scenes/battle/ui/battle_result.tscn",
+	"res://Scenes/battle/ui/buff_choice.tscn",
 	"res://Scenes/battle/ui/pause_menu.tscn",
 	"res://Scenes/ui/start_ui.tscn",
 	"res://Scenes/ui/save_select.tscn",
@@ -42,6 +43,21 @@ func _ready() -> void:
 	assert(bullet is Area2D and enemy is Area2D, "战斗碰撞节点必须使用 Area2D")
 	bullet.free()
 	enemy.free()
+
+	# 暂停状态下等待入场完成，确认三张有效 Buff 卡都能操作。
+	var buff_ui: BuffChoiceUI = load("res://Scenes/battle/ui/buff_choice.tscn").instantiate() as BuffChoiceUI
+	add_child(buff_ui)
+	var choices: Array[Dictionary] = []
+	for id in range(1, 4):
+		choices.append({"id": id, "name": str(id), "next_level": 1, "max_level": 1, "prev_desc": "无", "next_desc": "+1"})
+	buff_ui.show_choices(choices)
+	get_tree().paused = true
+	await get_tree().create_timer(0.6).timeout
+	for button_name in ["Choice0", "Choice1", "Choice2"]:
+		var button: Button = buff_ui.get_node("%" + button_name) as Button
+		assert(not button.disabled and button.mouse_filter == Control.MOUSE_FILTER_STOP, "Buff 卡未开放输入: %s" % button_name)
+	get_tree().paused = false
+	buff_ui.free()
 
 	for filename in DirAccess.get_files_at("res://data"):
 		if filename.begins_with("~$"):

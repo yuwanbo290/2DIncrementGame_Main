@@ -10,12 +10,15 @@ signal quit_pressed
 @onready var _stats_label: Label = %StatsLabel
 @onready var _resume_btn: Button = %ResumeBtn
 @onready var _quit_btn: Button = %QuitBtn
+@onready var _popup_panel: PanelContainer = %PopupPanel
+@onready var _dimmer: ColorRect = $Dimmer
 
 
 func _ready() -> void:
-	theme = UIBase.BUTTON_THEME
 	_resume_btn.pressed.connect(func(): resume_pressed.emit())
 	_quit_btn.pressed.connect(func(): quit_pressed.emit())
+	UIBase.bind_button(_resume_btn)
+	UIBase.bind_button(_quit_btn)
 	visible = false
 
 
@@ -23,6 +26,7 @@ func _ready() -> void:
 func show_menu(stats: Dictionary) -> void:
 	_stats_label.text = PlayerStatsService.format_stats(stats)
 	visible = true
+	UIBase.popup_in(_dimmer, _popup_panel)
 	_resume_btn.grab_focus()
 
 

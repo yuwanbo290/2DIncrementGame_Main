@@ -1,10 +1,12 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://Scripts/ui/confirm_dialog.gd" id="1_script"]
+[ext_resource type="Theme" path="res://Resources/button_theme.tres" id="2_theme"]
 
 [node name="ConfirmDialog" type="ConfirmationDialog"]
 initial_position = 1
 size = Vector2i(440, 240)
 unresizable = true
+theme = ExtResource("2_theme")
 dialog_text = "确定要执行此操作吗？"
 script = ExtResource("1_script")

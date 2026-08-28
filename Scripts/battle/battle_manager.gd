@@ -71,17 +71,22 @@ var _level: int = 1
 var _is_choosing_buff: bool = false
 ## 本局 Buff 提供的属性加成明细（attr key -> 累计值），暂停界面以（）展示
 var _buff_bonus: Dictionary = {}
+## HUD 只在目标值变化时播放反馈，避免 _process() 每帧重建 Tween。
+var _last_timer_second: int = -1
+var _last_gold_value: int = -1
+var _last_kill_value: int = -1
+var _last_stage_value: int = -1
+var _last_exp_target: float = -1.0
 
 @onready var _buff_choice_ui: BuffChoiceUI = $UI/BuffChoiceUI as BuffChoiceUI
 @onready var _result_ui: BattleResultUI = $UI/BattleResultUI as BattleResultUI
 @onready var _pause_ui: PauseMenuUI = $UI/PauseMenuUI as PauseMenuUI
 @onready var _world: Node2D = $World
 @onready var _background: ColorRect = $World/Background
-@onready var _pause_btn: Button = $UI/TopBar/PauseBtn
-@onready var _gold_label: Label = $UI/TopBar/GoldLabel
-@onready var _timer_label: Label = $UI/TopBar/TimerLabel
-@onready var _kill_label: Label = $UI/TopBar/KillLabel
-@onready var _wave_label: Label = $UI/TopBar/WaveLabel
+@onready var _pause_btn: Button = $UI/PauseBtn
+@onready var _gold_label: Label = $UI/StatsCard/Margin/Stats/GoldLabel
+@onready var _kill_label: Label = $UI/StatsCard/Margin/Stats/KillLabel
+@onready var _wave_label: Label = $UI/StatsCard/Margin/Stats/WaveLabel
 @onready var _big_timer_label: Label = $UI/BigTimerLabel
 @onready var _notice_label: Label = $UI/NoticeLabel
 @onready var _exp_bar: ProgressBar = $UI/ExpBar
@@ -108,7 +113,7 @@ func _ready() -> void:
 	_max_stage = _get_max_stage()
 
 	# 暂停按钮：打开属性面板，可继续战斗或放弃本局返回备战。
-	_pause_btn.theme = UIBase.BUTTON_THEME
+	UIBase.bind_button(_pause_btn)
 	_pause_btn.pressed.connect(_on_pause_pressed)
 	_pause_ui.resume_pressed.connect(_on_pause_resume)
 	_pause_ui.quit_pressed.connect(_on_pause_quit)
@@ -630,7 +635,7 @@ func _process(delta: float) -> void:
 		_finish_round()
 		return
 
-	# 每帧刷新 HUD：倒计时实时显示，最后 10 秒红闪
+	# HUD 每帧接收状态，但仅在整数秒或目标值变化时更新动效。
 	_update_hud()
 
 	# 刷怪逻辑：场上全灭时立即刷新一批；否则按 spawn_interval 间隔计时刷怪。
@@ -660,27 +665,45 @@ func _show_notice(text: String, duration: float = 2.0) -> void:
 
 
 func _update_hud() -> void:
-	_gold_label.text = "金币: %d" % int(_gold)
-	_timer_label.text = "体力: %d" % ceili(_time_left)
-	_kill_label.text = "击杀: %d" % _kills
-	_wave_label.text = "阶段 %d" % _stage
+	var gold_value: int = int(_gold)
+	if gold_value != _last_gold_value:
+		_gold_label.text = "金币: %d" % gold_value
+		if _last_gold_value >= 0:
+			UIBase.pulse(_gold_label)
+		_last_gold_value = gold_value
 
-	# 大号居中倒计时：最后 10 秒变红并闪烁（0.5 秒交替）
+	if _kills != _last_kill_value:
+		_kill_label.text = "击杀: %d" % _kills
+		if _last_kill_value >= 0:
+			UIBase.pulse(_kill_label)
+		_last_kill_value = _kills
+
+	if _stage != _last_stage_value:
+		_wave_label.text = "阶段 %d" % _stage
+		if _last_stage_value >= 0:
+			UIBase.pulse(_wave_label)
+		_last_stage_value = _stage
+
+	# 最后 10 秒只在整数秒变化时脉冲一次，不再逐帧修改字号。
 	var remain: int = ceili(_time_left)
-	_big_timer_label.text = str(remain)
-	if remain <= 10:
-		var blink: bool = fmod(Time.get_ticks_msec() / 1000.0, 0.5) < 0.25
-		_big_timer_label.add_theme_color_override("font_color", Color(1, 0.32, 0.26, 1) if blink else Color(1, 0.82, 0.3, 1))
-		_big_timer_label.add_theme_font_size_override("font_size", 58 if blink else 46)
-	else:
-		_big_timer_label.add_theme_color_override("font_color", Color(1, 0.85, 0.2, 1))
-		_big_timer_label.add_theme_font_size_override("font_size", 46)
+	if remain != _last_timer_second:
+		_big_timer_label.text = str(remain)
+		_big_timer_label.add_theme_color_override(
+			"font_color",
+			Color("c84d45") if remain <= 10 else Color("e6b84a")
+		)
+		if _last_timer_second >= 0 and remain <= 10:
+			UIBase.pulse(_big_timer_label)
+		_last_timer_second = remain
 
 	# 底部经验条：进度 = 当前经验 / 升级所需经验
 	if config != null:
-		_exp_bar.max_value = maxf(_exp_for_level(_level), 1.0)
-		_exp_bar.value = _exp
-		_exp_label.text = "Lv.%d ｜ %d/%d" % [_level, int(_exp), int(_exp_for_level(_level))]
+		var needed: float = maxf(_exp_for_level(_level), 1.0)
+		_exp_bar.max_value = needed
+		if not is_equal_approx(_exp, _last_exp_target):
+			UIBase.tween_range(_exp_bar, _exp, 0.16)
+			_last_exp_target = _exp
+		_exp_label.text = "Lv.%d ｜ %d/%d" % [_level, int(_exp), int(needed)]
 
 
 func _finish_round() -> void:

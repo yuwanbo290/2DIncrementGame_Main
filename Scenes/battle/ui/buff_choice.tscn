@@ -1,66 +1,6 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://Scripts/battle/ui/buff_choice.gd" id="1_script"]
-
-[sub_resource type="StyleBoxFlat" id="StyleNormal"]
-bg_color = Color(0.08, 0.14, 0.2, 0.98)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.38, 0.72, 0.84, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-content_margin_left = 22.0
-content_margin_top = 22.0
-content_margin_right = 22.0
-content_margin_bottom = 22.0
-
-[sub_resource type="StyleBoxFlat" id="StyleHover"]
-bg_color = Color(0.12, 0.24, 0.3, 0.98)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(1, 0.85, 0.2, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-content_margin_left = 21.0
-content_margin_top = 21.0
-content_margin_right = 21.0
-content_margin_bottom = 21.0
-
-[sub_resource type="StyleBoxFlat" id="StylePressed"]
-bg_color = Color(0.08, 0.34, 0.26, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.45, 1, 0.65, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-content_margin_left = 21.0
-content_margin_top = 21.0
-content_margin_right = 21.0
-content_margin_bottom = 21.0
-
-[sub_resource type="StyleBoxFlat" id="StyleFocus"]
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(1, 1, 1, 0.85)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
 
 [node name="BuffChoiceUI" type="Control"]
 process_mode = 3
@@ -102,96 +42,267 @@ theme_override_constants/margin_bottom = 36
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Content" type="VBoxContainer" parent="SafeMargin/Center"]
-custom_minimum_size = Vector2(920, 410)
+[node name="PopupPanel" type="PanelContainer" parent="SafeMargin/Center"]
+custom_minimum_size = Vector2(1040, 480)
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"CardPanel"
+
+[node name="PopupMargin" type="MarginContainer" parent="SafeMargin/Center/PopupPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 28
+
+[node name="Content" type="VBoxContainer" parent="SafeMargin/Center/PopupPanel/PopupMargin"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 
-[node name="Title" type="Label" parent="SafeMargin/Center/Content"]
+[node name="Title" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 34
+theme_override_colors/font_color = Color(0.901961, 0.721569, 0.290196, 1)
+theme_override_font_sizes/font_size = 32
 text = "选择一项局内升级"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="SafeMargin/Center/Content"]
+[node name="Subtitle" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.85, 0.92, 0.96, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.666667, 0.713726, 0.67451, 1)
+theme_override_font_sizes/font_size = 16
 text = "战斗已暂停 · 选择后立即生效"
 horizontal_alignment = 1
 
-[node name="Choices" type="HBoxContainer" parent="SafeMargin/Center/Content"]
+[node name="Choices" type="HBoxContainer" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content"]
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 20
 alignment = 1
 
-[node name="Choice0" type="Button" parent="SafeMargin/Center/Content/Choices"]
+[node name="Choice0" type="Button" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 300)
+custom_minimum_size = Vector2(296, 300)
 layout_mode = 2
 size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../Choice2")
 focus_neighbor_right = NodePath("../Choice1")
-theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 19
-theme_override_styles/normal = SubResource("StyleNormal")
-theme_override_styles/hover = SubResource("StyleHover")
-theme_override_styles/pressed = SubResource("StylePressed")
-theme_override_styles/focus = SubResource("StyleFocus")
-text = "升级选项 1"
-alignment = 1
+theme_type_variation = &"CardButton"
+
+[node name="CardContent" type="VBoxContainer" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 22.0
+offset_top = 20.0
+offset_right = -22.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice0/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94902, 0.917647, 0.843137, 1)
+theme_override_font_sizes/font_size = 24
+text = "升级名称"
+horizontal_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice0/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.658824, 0.827451, 0.356863, 1)
+theme_override_font_sizes/font_size = 16
+text = "Lv.1 / 3"
+horizontal_alignment = 1
+
+[node name="Divider" type="HSeparator" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice0/CardContent"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="EffectTitle" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice0/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.901961, 0.721569, 0.290196, 1)
+theme_override_font_sizes/font_size = 15
+text = "升级效果"
+
+[node name="EffectLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice0/CardContent"]
+custom_minimum_size = Vector2(0, 78)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94902, 0.917647, 0.843137, 1)
+theme_override_font_sizes/font_size = 17
+text = "效果说明"
+horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="Choice1" type="Button" parent="SafeMargin/Center/Content/Choices"]
+[node name="CurrentLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice0/CardContent"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.666667, 0.713726, 0.67451, 1)
+theme_override_font_sizes/font_size = 14
+text = "当前：无"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Choice1" type="Button" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 300)
+custom_minimum_size = Vector2(296, 300)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_neighbor_left = NodePath("../Choice0")
 focus_neighbor_right = NodePath("../Choice2")
-theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 19
-theme_override_styles/normal = SubResource("StyleNormal")
-theme_override_styles/hover = SubResource("StyleHover")
-theme_override_styles/pressed = SubResource("StylePressed")
-theme_override_styles/focus = SubResource("StyleFocus")
-text = "升级选项 2"
-alignment = 1
+theme_type_variation = &"CardButton"
+
+[node name="CardContent" type="VBoxContainer" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 22.0
+offset_top = 20.0
+offset_right = -22.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice1/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94902, 0.917647, 0.843137, 1)
+theme_override_font_sizes/font_size = 24
+text = "升级名称"
+horizontal_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice1/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.658824, 0.827451, 0.356863, 1)
+theme_override_font_sizes/font_size = 16
+text = "Lv.1 / 3"
+horizontal_alignment = 1
+
+[node name="Divider" type="HSeparator" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice1/CardContent"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="EffectTitle" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice1/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.901961, 0.721569, 0.290196, 1)
+theme_override_font_sizes/font_size = 15
+text = "升级效果"
+
+[node name="EffectLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice1/CardContent"]
+custom_minimum_size = Vector2(0, 78)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94902, 0.917647, 0.843137, 1)
+theme_override_font_sizes/font_size = 17
+text = "效果说明"
+horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="Choice2" type="Button" parent="SafeMargin/Center/Content/Choices"]
+[node name="CurrentLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice1/CardContent"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.666667, 0.713726, 0.67451, 1)
+theme_override_font_sizes/font_size = 14
+text = "当前：无"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Choice2" type="Button" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 300)
+custom_minimum_size = Vector2(296, 300)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_neighbor_left = NodePath("../Choice1")
-theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 19
-theme_override_styles/normal = SubResource("StyleNormal")
-theme_override_styles/hover = SubResource("StyleHover")
-theme_override_styles/pressed = SubResource("StylePressed")
-theme_override_styles/focus = SubResource("StyleFocus")
-text = "升级选项 3"
-alignment = 1
+focus_neighbor_right = NodePath("../Choice0")
+theme_type_variation = &"CardButton"
+
+[node name="CardContent" type="VBoxContainer" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 22.0
+offset_top = 20.0
+offset_right = -22.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice2/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94902, 0.917647, 0.843137, 1)
+theme_override_font_sizes/font_size = 24
+text = "升级名称"
+horizontal_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice2/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.658824, 0.827451, 0.356863, 1)
+theme_override_font_sizes/font_size = 16
+text = "Lv.1 / 3"
+horizontal_alignment = 1
+
+[node name="Divider" type="HSeparator" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice2/CardContent"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="EffectTitle" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice2/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.901961, 0.721569, 0.290196, 1)
+theme_override_font_sizes/font_size = 15
+text = "升级效果"
+
+[node name="EffectLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice2/CardContent"]
+custom_minimum_size = Vector2(0, 78)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.94902, 0.917647, 0.843137, 1)
+theme_override_font_sizes/font_size = 17
+text = "效果说明"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="CurrentLabel" type="Label" parent="SafeMargin/Center/PopupPanel/PopupMargin/Content/Choices/Choice2/CardContent"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.666667, 0.713726, 0.67451, 1)
+theme_override_font_sizes/font_size = 14
+text = "当前：无"
+horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 3

@@ -1,7 +1,7 @@
 class_name SkillTreeCanvas
 extends Control
 ## 技能树连线画布：在技能节点之间绘制「前置 → 当前」的连线（out_of_battle_upgrade 专用）。
-## 连线颜色按前置技能是否已解锁（等级 ≥ 1）区分：已解锁亮绿色、未解锁暗灰色。
+## 连线颜色按前置技能是否已解锁（等级 ≥ 1）区分：已解锁苔绿、未解锁深灰绿。
 ## 数据由 out_of_battle_upgrade.setup() 注入：node_pos（skill_id -> 节点左上角位置）与 parent_map（skill_id -> 父 id）。
 
 
@@ -9,9 +9,9 @@ extends Control
 const NODE_W := 160.0
 const NODE_H := 120.0
 ## 已解锁连线的颜色
-const LINE_ACTIVE := Color(0.7, 0.85, 0.4, 0.9)
+const LINE_ACTIVE := Color(0.658824, 0.827451, 0.356863, 0.9)
 ## 未解锁连线的颜色
-const LINE_LOCKED := Color(0.35, 0.35, 0.4, 0.6)
+const LINE_LOCKED := Color(0.27451, 0.337255, 0.286275, 0.55)
 
 
 ## skill_id -> 节点左上角位置（相对本画布）

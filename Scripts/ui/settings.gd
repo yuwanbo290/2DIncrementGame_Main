@@ -17,6 +17,10 @@ const WINDOW_MODES: Array[String] = [
 
 var _current_settings: Dictionary = {}
 
+@onready var _dimmer: Control = $Dimmer
+@onready var _dialog_body: Control = $MainContainer
+@onready var _reduced_motion_toggle: CheckButton = $MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection/MotionRow/ReducedMotionToggle
+
 
 func _ready() -> void:
 	var res_option: OptionButton = $MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection/ResolutionRow/ResolutionOption as OptionButton
@@ -41,6 +45,7 @@ func _ready() -> void:
 	master_slider.value_changed.connect(_on_master_volume_changed)
 	music_slider.value_changed.connect(_on_music_volume_changed)
 	sfx_slider.value_changed.connect(_on_sfx_volume_changed)
+	_reduced_motion_toggle.toggled.connect(_on_reduced_motion_toggled)
 
 	var reset_btn: Button = $MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/ResetBtn as Button
 	var save_btn: Button = $MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/SaveBtn as Button
@@ -53,6 +58,11 @@ func _ready() -> void:
 
 func refresh() -> void:
 	_load_settings()
+
+
+func play_enter() -> Tween:
+	modulate.a = 1.0
+	return UIBase.popup_in(_dimmer, _dialog_body)
 
 
 func _load_settings() -> void:
@@ -79,9 +89,10 @@ func _load_settings() -> void:
 	var music_vol: float = _current_settings.get("music_volume", 1.0)
 	var sfx_vol: float = _current_settings.get("sfx_volume", 1.0)
 
-	master_slider.value = master_vol
-	music_slider.value = music_vol
-	sfx_slider.value = sfx_vol
+	master_slider.set_value_no_signal(master_vol)
+	music_slider.set_value_no_signal(music_vol)
+	sfx_slider.set_value_no_signal(sfx_vol)
+	_reduced_motion_toggle.set_pressed_no_signal(bool(_current_settings.get("reduced_motion", false)))
 
 	_update_volume_labels()
 
@@ -130,6 +141,11 @@ func _on_sfx_volume_changed(value: float) -> void:
 	_save_immediate()
 
 
+func _on_reduced_motion_toggled(enabled: bool) -> void:
+	_current_settings["reduced_motion"] = enabled
+	_save_immediate()
+
+
 func _on_back_pressed() -> void:
 	UIManager.close_ui("settings")
 
@@ -141,6 +157,7 @@ func _on_reset_pressed() -> void:
 		"sfx_volume": 1.0,
 		"resolution": "1280x720",
 		"window_mode": "windowed",
+		"reduced_motion": false,
 		"lang": "zh_CN",
 	}
 	# 先保存默认值，再 _load_settings 才能正确刷新 UI
@@ -160,7 +177,7 @@ func _save_immediate() -> void:
 func _show_toast(msg: String) -> void:
 	var toast: Label = Label.new()
 	toast.text = msg
-	toast.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5, 1))
+	toast.add_theme_color_override("font_color", Color(0.658824, 0.827451, 0.356863, 1))
 	toast.add_theme_font_size_override("font_size", 18)
 	toast.anchor_left = 0.5
 	toast.anchor_top = 0.5
@@ -177,6 +194,6 @@ func _show_toast(msg: String) -> void:
 	var timer: SceneTreeTimer = get_tree().create_timer(1.5)
 	timer.timeout.connect(func():
 		var tw: Tween = toast.create_tween()
-		tw.tween_property(toast, "modulate", Color(1, 1, 1, 0), 0.5)
+		tw.tween_property(toast, "modulate", Color(1, 1, 1, 0), 0.08 if UIBase.is_reduced_motion() else 0.5)
 		tw.tween_callback(toast.queue_free)
 	)

@@ -15,18 +15,19 @@ const V_GAP := 60.0
 ## 画布内边距
 const PAD := 24.0
 const BUTTON_SIZE := Vector2(200, 42)
+const UI_ICONS := preload("res://Textures/ui/moss_ember_icons.png")
 
-const COLOR_TEXT := Color(1, 1, 1, 1)
-const COLOR_DESC := Color(0.7, 0.7, 0.7, 1)
-const COLOR_GOLD := Color(1, 0.85, 0.2, 1)
-const COLOR_DISABLED := Color(0.5, 0.5, 0.5, 1)
-const COLOR_WARN := Color(1, 0.3, 0.3, 1)
+const COLOR_TEXT := Color(0.94902, 0.917647, 0.843137, 1)
+const COLOR_DESC := Color(0.666667, 0.713725, 0.67451, 1)
+const COLOR_GOLD := Color(0.901961, 0.721569, 0.290196, 1)
+const COLOR_DISABLED := Color(0.666667, 0.713725, 0.67451, 0.65)
+const COLOR_WARN := Color(0.886275, 0.415686, 0.239216, 1)
 ## 技能节点背景 / 边框（未解锁更暗；选中用金色边框）
-const PANEL_BG := Color(0.12, 0.14, 0.18, 0.95)
-const PANEL_BG_LOCKED := Color(0.08, 0.09, 0.12, 0.9)
-const PANEL_BORDER := Color(0.3, 0.3, 0.4, 1)
-const PANEL_BORDER_LOCKED := Color(0.2, 0.2, 0.25, 1)
-const BORDER_SELECTED := Color(1, 0.85, 0.2, 1)
+const PANEL_BG := Color(0.0784314, 0.101961, 0.0941176, 0.97)
+const PANEL_BG_LOCKED := Color(0.0509804, 0.0666667, 0.0588235, 0.94)
+const PANEL_BORDER := Color(0.27451, 0.337255, 0.286275, 1)
+const PANEL_BORDER_LOCKED := Color(0.188235, 0.219608, 0.192157, 0.85)
+const BORDER_SELECTED := Color(0.901961, 0.721569, 0.290196, 1)
 
 
 ## 技能树画布（左侧 ScrollContainer 内）
@@ -37,12 +38,17 @@ var _detail_vbox: VBoxContainer
 var _parent_map: Dictionary = {}
 ## skill_id -> 节点左上角位置（相对画布）
 var _node_pos: Dictionary = {}
+## skill_id -> 运行时按钮，用于焦点恢复与单节点升级反馈。
+var _node_buttons: Dictionary = {}
 ## 当前选中的技能 id（右侧详情 + 节点高亮）
 var _selected_skill: int = 0
 
+@onready var _back_btn: Button = %BackBtn
+@onready var _gold_label: Label = %GoldLabel
+
 
 func _ready() -> void:
-	($TopBar/BackBtn as Button).pressed.connect(_on_back_pressed)
+	_back_btn.pressed.connect(_on_back_pressed)
 	_canvas = $MainContainer/Panel/HBox/LeftMargin/ScrollContainer/TreeCanvas as SkillTreeCanvas
 	if _canvas == null:
 		push_error("[局外养成] 缺少 TreeCanvas 画布节点")
@@ -64,7 +70,7 @@ func refresh() -> void:
 
 
 func _refresh_gold() -> void:
-	_refresh_gold_label($TopBar/GoldLabel as Label)
+	_refresh_gold_label(_gold_label)
 
 
 # ---- 技能树构建 ----
@@ -77,6 +83,7 @@ func _clear_tree() -> void:
 		child.queue_free()
 	_parent_map.clear()
 	_node_pos.clear()
+	_node_buttons.clear()
 	_canvas.clear_data()
 
 
@@ -148,6 +155,7 @@ func _build_tree() -> void:
 			_build_node(sid, pos)
 
 	_canvas.setup(_node_pos, _parent_map)
+	_configure_tree_focus()
 
 
 ## 构建单个技能节点（可点击 Button，点击选中并在右侧展示详情）。
@@ -170,17 +178,22 @@ func _build_node(skill_id: int, pos: Vector2) -> void:
 	btn.add_theme_stylebox_override("normal", _make_node_style(bg, border))
 	btn.add_theme_stylebox_override("hover", _make_node_style(bg.lightened(0.05), border))
 	btn.add_theme_stylebox_override("pressed", _make_node_style(bg.darkened(0.05), border))
-	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn.add_theme_stylebox_override("focus", _make_node_focus_style())
 	if not unlocked:
-		btn.text = "🔒 %s" % str(row.get("skillName", "未知"))
+		btn.icon = _create_atlas_icon(Rect2(96, 32, 32, 32))
+		btn.add_theme_constant_override("icon_max_width", 20)
+		btn.text = "%s\n未解锁" % str(row.get("skillName", "未知"))
 	else:
 		btn.text = "%s\n等级 %d / %d" % [str(row.get("skillName", "未知")), level, max_level]
 	btn.add_theme_font_size_override("font_size", 16)
-	btn.add_theme_color_override("font_color", COLOR_TEXT if unlocked else COLOR_DISABLED)
+	btn.add_theme_color_override("font_color", (COLOR_GOLD if selected else COLOR_TEXT) if unlocked else COLOR_DISABLED)
 	btn.add_theme_color_override("font_hover_color", COLOR_TEXT if unlocked else COLOR_DISABLED)
+	btn.add_theme_color_override("font_focus_color", COLOR_TEXT if unlocked else COLOR_DISABLED)
 	btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	btn.pressed.connect(_on_node_pressed.bind(skill_id))
 	_canvas.add_child(btn)
+	_node_buttons[skill_id] = btn
+	UIBase.bind_button(btn)
 
 
 ## 生成技能节点的 StyleBoxFlat。
@@ -197,6 +210,36 @@ func _make_node_style(bg: Color, border: Color) -> StyleBoxFlat:
 	return style
 
 
+## 焦点始终使用统一旧金描边，不覆盖节点自身背景与选中状态。
+func _make_node_focus_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.draw_center = false
+	style.border_color = BORDER_SELECTED
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(9)
+	return style
+
+
+## 直接从现有图集裁切图标，避免引入额外图标管理层。
+func _create_atlas_icon(region: Rect2) -> AtlasTexture:
+	var icon := AtlasTexture.new()
+	icon.atlas = UI_ICONS
+	icon.region = region
+	return icon
+
+
+## 返回键向下进入当前技能；根技能向上仍能回到返回键。
+func _configure_tree_focus() -> void:
+	_back_btn.focus_neighbor_bottom = NodePath()
+	var selected_button: Button = _node_buttons.get(_selected_skill) as Button
+	if is_instance_valid(selected_button):
+		_back_btn.focus_neighbor_bottom = _back_btn.get_path_to(selected_button)
+	for skill_id in _node_buttons.keys():
+		var button: Button = _node_buttons[skill_id] as Button
+		if int(_parent_map.get(skill_id, 0)) <= 0:
+			button.focus_neighbor_top = button.get_path_to(_back_btn)
+
+
 ## 点击技能节点：选中并刷新左侧高亮与右侧详情。
 func _on_node_pressed(skill_id: int) -> void:
 	if skill_id == _selected_skill:
@@ -204,6 +247,7 @@ func _on_node_pressed(skill_id: int) -> void:
 	_selected_skill = skill_id
 	_build_tree()
 	_build_detail()
+	call_deferred("_restore_skill_focus", skill_id, false)
 
 
 ## 读取指定技能指定等级的 skillLevel 效果描述（desc 列）；无配置返回空字符串。
@@ -276,7 +320,7 @@ func _build_detail() -> void:
 	var next_desc: String = _get_level_desc(skill_id, level + 1)
 	if not unlocked:
 		var lock_label := Label.new()
-		lock_label.text = "🔒 未解锁：请先升级前置技能"
+		lock_label.text = "未解锁：请先升级前置技能"
 		lock_label.add_theme_font_size_override("font_size", 16)
 		lock_label.add_theme_color_override("font_color", COLOR_WARN)
 		_detail_vbox.add_child(lock_label)
@@ -330,9 +374,18 @@ func _build_detail() -> void:
 		upg_btn = _create_text_button("升级（%d 金币）" % next_cost, BUTTON_SIZE, COLOR_TEXT if can_afford else COLOR_WARN)
 		upg_btn.disabled = not can_afford
 		if can_afford:
+			upg_btn.theme_type_variation = &"PrimaryButton"
 			upg_btn.pressed.connect(_on_upgrade_pressed.bind(skill_id, next_cost))
+	upg_btn.icon = _create_atlas_icon(Rect2(64, 32, 32, 32))
+	upg_btn.add_theme_constant_override("icon_max_width", 20)
 	upg_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_detail_vbox.add_child(upg_btn)
+
+	# 详情动作与当前节点建立水平导航，保留原生方向键行为。
+	var selected_button: Button = _node_buttons.get(skill_id) as Button
+	if not upg_btn.disabled and is_instance_valid(selected_button):
+		selected_button.focus_neighbor_right = selected_button.get_path_to(upg_btn)
+		upg_btn.focus_neighbor_left = upg_btn.get_path_to(selected_button)
 
 
 ## 查询指定技能指定等级的升级花费（无该等级配置返回 -1）。
@@ -356,6 +409,17 @@ func _on_upgrade_pressed(skill_id: int, cost: int) -> void:
 	_refresh_gold()
 	_build_tree()
 	_build_detail()
+	call_deferred("_restore_skill_focus", skill_id, true)
+
+
+## 重建后恢复升级节点焦点；仅成功升级时对该节点做一次脉冲反馈。
+func _restore_skill_focus(skill_id: int, pulse_node: bool) -> void:
+	var button: Button = _node_buttons.get(skill_id) as Button
+	if not is_instance_valid(button):
+		return
+	button.grab_focus()
+	if pulse_node:
+		UIBase.pulse(button)
 
 
 func _on_back_pressed() -> void:

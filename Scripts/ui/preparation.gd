@@ -1,26 +1,47 @@
 extends UIBase
 
 
+@onready var _back_btn: Button = $TopBar/BackBtn
+@onready var _gold_label: Label = $TopBar/GoldLabel
+@onready var _slot_info: Label = $TopBar/SlotInfo
+@onready var _start_hunt_btn: Button = $MainContainer/VBox/StartHuntBtn
+@onready var _upgrade_btn: Button = $MainContainer/VBox/MainRow/UpgradeBtn
+@onready var _shop_btn: Button = $MainContainer/VBox/MainRow/ShopBtn
+@onready var _weapon_btn: Button = $MainContainer/VBox/MainRow/WeaponBtn
+@onready var _feature_cards: Array[Control] = [_upgrade_btn, _shop_btn, _weapon_btn]
+
+
 func _ready() -> void:
-	($TopBar/BackBtn as Button).pressed.connect(_on_back_pressed)
-	($MainContainer/VBox/MainRow/LeftVBox/UpgradeBtn as Button).pressed.connect(_on_upgrade_pressed)
-	($MainContainer/VBox/MainRow/LeftVBox/ShopBtn as Button).pressed.connect(_on_shop_pressed)
-	($MainContainer/VBox/MainRow/CenterVBox/WeaponBtn as Button).pressed.connect(_on_weapon_pressed)
-	($MainContainer/VBox/MainRow/CenterVBox/StartHuntBtn as Button).pressed.connect(_on_start_battle_pressed)
+	_back_btn.pressed.connect(_on_back_pressed)
+	_upgrade_btn.pressed.connect(_on_upgrade_pressed)
+	_shop_btn.pressed.connect(_on_shop_pressed)
+	_weapon_btn.pressed.connect(_on_weapon_pressed)
+	_start_hunt_btn.pressed.connect(_on_start_battle_pressed)
 	super()
 
 
 func refresh() -> void:
 	_refresh_top_bar()
+	_reveal_feature_cards()
+
+
+func get_default_focus() -> Control:
+	return _start_hunt_btn
 
 
 func _refresh_top_bar() -> void:
-	var gold_label: Label = $TopBar/GoldLabel as Label
-	var slot_info: Label = $TopBar/SlotInfo as Label
-	_refresh_gold_label(gold_label)
-	if slot_info:
-		var slot: Dictionary = SaveSystem.get_current_slot()
-		slot_info.text = slot.get("name", "未选择存档")
+	_refresh_gold_label(_gold_label)
+	var slot: Dictionary = SaveSystem.get_current_slot()
+	_slot_info.text = str(slot.get("name", "未选择存档"))
+
+
+## 页面首次进入及缓存界面重新打开时，都从干净状态错峰展示三张功能卡。
+func _reveal_feature_cards() -> void:
+	for index in _feature_cards.size():
+		var card: Control = _feature_cards[index]
+		card.modulate = Color.WHITE
+		card.scale = Vector2.ONE
+		UIBase.reveal_card(card, index)
 
 
 func _on_back_pressed() -> void:

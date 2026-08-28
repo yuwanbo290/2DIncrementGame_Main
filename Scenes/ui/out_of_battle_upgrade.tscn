@@ -1,21 +1,22 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://Scripts/ui/out_of_battle_upgrade.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://Textures/ui/menu_bg.png" id="2_bg"]
 [ext_resource type="Script" path="res://Scripts/ui/skill_tree_canvas.gd" id="4_canvas"]
 [ext_resource type="Script" path="res://Scripts/ui/drag_scroll.gd" id="5_drag"]
+[ext_resource type="Texture2D" path="res://Textures/ui/moss_ember_icons.png" id="6_icons"]
 
-[sub_resource type="StyleBoxFlat" id="1_panel"]
-bg_color = Color(0.08, 0.1, 0.14, 0.92)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3, 0.4, 0.5, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="AtlasTexture" id="IconBack"]
+atlas = ExtResource("6_icons")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="IconCoin"]
+atlas = ExtResource("6_icons")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="IconUpgrade"]
+atlas = ExtResource("6_icons")
+region = Rect2(64, 32, 32, 32)
 
 [node name="OutOfBattleUpgrade" type="Control"]
 layout_mode = 3
@@ -27,89 +28,132 @@ grow_vertical = 2
 script = ExtResource("1_script")
 
 [node name="Bg" type="TextureRect" parent="."]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("2_bg")
-stretch_mode = 6
-
-[node name="TopBar" type="HBoxContainer" parent="."]
-layout_mode = 0
-anchor_right = 1.0
-offset_bottom = 60.0
-theme_override_constants/separation = 15
-
-[node name="BackBtn" type="Button" parent="TopBar"]
-custom_minimum_size = Vector2(110, 48)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 18
-text = "返回"
-
-[node name="TitleLabel" type="Label" parent="TopBar"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 28
-text = "局外养成"
-horizontal_alignment = 1
-
-[node name="GoldLabel" type="Label" parent="TopBar"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 22
-text = "金币: 0"
-
-[node name="MainContainer" type="MarginContainer" parent="."]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -581.0
-offset_bottom = -144.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_constants/margin_left = 80
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 80
-theme_override_constants/margin_bottom = 40
-
-[node name="Panel" type="Panel" parent="MainContainer"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("1_panel")
-
-[node name="HBox" type="HBoxContainer" parent="MainContainer/Panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 15
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BgShade" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="TopBarPanel" type="Panel" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 32.0
+offset_top = 18.0
+offset_right = -32.0
+offset_bottom = 82.0
+mouse_filter = 2
+
+[node name="TopBar" type="HBoxContainer" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 48.0
+offset_top = 26.0
+offset_right = -48.0
+offset_bottom = 74.0
+theme_override_constants/separation = 12
+
+[node name="BackBtn" type="Button" parent="TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 44)
+layout_mode = 2
+icon = SubResource("IconBack")
+icon_max_width = 22
+text = "返回"
+
+[node name="UpgradeIcon" type="TextureRect" parent="TopBar"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = SubResource("IconUpgrade")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="TopBar"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.94902, 0.917647, 0.843137, 1)
+theme_override_font_sizes/font_size = 27
+text = "局外养成"
+vertical_alignment = 1
+
+[node name="CoinIcon" type="TextureRect" parent="TopBar"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = SubResource("IconCoin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GoldLabel" type="Label" parent="TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.901961, 0.721569, 0.290196, 1)
+theme_override_font_sizes/font_size = 20
+text = "金币: 0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MainContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 94
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 32
+
+[node name="Panel" type="Panel" parent="MainContainer"]
+layout_mode = 2
+theme_type_variation = &"FloatingPanel"
+
+[node name="HBox" type="HBoxContainer" parent="MainContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
 
 [node name="LeftMargin" type="MarginContainer" parent="MainContainer/Panel/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/margin_left = 15
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 15
-theme_override_constants/margin_bottom = 15
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MainContainer/Panel/HBox/LeftMargin"]
 layout_mode = 2
 size_flags_vertical = 3
+follow_focus = true
 script = ExtResource("5_drag")
 
 [node name="TreeCanvas" type="Control" parent="MainContainer/Panel/HBox/LeftMargin/ScrollContainer"]
@@ -118,16 +162,16 @@ size_flags_horizontal = 4
 script = ExtResource("4_canvas")
 
 [node name="RightPanel" type="PanelContainer" parent="MainContainer/Panel/HBox"]
-custom_minimum_size = Vector2(320, 0)
+custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_styles/panel = SubResource("1_panel")
+theme_type_variation = &"CardPanel"
 
 [node name="Margin" type="MarginContainer" parent="MainContainer/Panel/HBox/RightPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 20
+theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
+theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 20
 
 [node name="DetailVBox" type="VBoxContainer" parent="MainContainer/Panel/HBox/RightPanel/Margin"]

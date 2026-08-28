@@ -1,9 +1,14 @@
 extends UIBase
 
+@onready var _start_btn: Button = %BtnStart
+@onready var _settings_btn: Button = %BtnSettings
+@onready var _exit_btn: Button = %BtnExit
+
+
 func _ready() -> void:
-	($CenterContainer/MainVBox/BtnStart as Button).pressed.connect(_on_start_pressed)
-	($CenterContainer/MainVBox/BtnSettings as Button).pressed.connect(_on_settings_pressed)
-	($CenterContainer/MainVBox/BtnExit as Button).pressed.connect(_on_exit_pressed)
+	_start_btn.pressed.connect(_on_start_pressed)
+	_settings_btn.pressed.connect(_on_settings_pressed)
+	_exit_btn.pressed.connect(_on_exit_pressed)
 	super()
 
 

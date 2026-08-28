@@ -1,20 +1,17 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://Scripts/ui/startui.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://Textures/ui/menu_bg.png" id="2_bg"]
-[ext_resource type="Texture2D" path="res://Textures/ui/goblin_emblem.png" id="6_icon_game"]
+[ext_resource type="Texture2D" path="res://Textures/ui/goblin_emblem.png" id="3_emblem"]
+[ext_resource type="Texture2D" path="res://Textures/ui/moss_ember_icons.png" id="4_icons"]
 
-[sub_resource type="StyleBoxFlat" id="6_panel_style"]
-bg_color = Color(0.08, 0.1, 0.14, 0.85)
-border_color = Color(0.3, 0.4, 0.5, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="AtlasTexture" id="AtlasStart"]
+atlas = ExtResource("4_icons")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasSettings"]
+atlas = ExtResource("4_icons")
+region = Rect2(64, 0, 32, 32)
 
 [node name="StartUI" type="Control"]
 layout_mode = 3
@@ -27,189 +24,243 @@ mouse_filter = 0
 script = ExtResource("1_script")
 
 [node name="Bg" type="TextureRect" parent="."]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("2_bg")
-expand_mode = 1
-
-[node name="CenterContainer" type="CenterContainer" parent="."]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="MainVBox" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="TitlePanel" type="Panel" parent="CenterContainer/MainVBox"]
-layout_mode = 2
-custom_minimum_size = Vector2(640, 230)
-theme_override_styles/panel = SubResource("6_panel_style")
-
-[node name="TitleMargin" type="MarginContainer" parent="CenterContainer/MainVBox/TitlePanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 80
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 80
-theme_override_constants/margin_bottom = 15
-
-[node name="TitleVBox" type="VBoxContainer" parent="CenterContainer/MainVBox/TitlePanel/TitleMargin"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 8
-
-[node name="GameIcon" type="TextureRect" parent="CenterContainer/MainVBox/TitlePanel/TitleMargin/TitleVBox"]
-layout_mode = 2
-texture = ExtResource("6_icon_game")
+mouse_filter = 2
+texture = ExtResource("2_bg")
 expand_mode = 1
-stretch_mode = 5
-custom_minimum_size = Vector2(56, 56)
-mouse_filter = 2
+stretch_mode = 6
 
-[node name="Title" type="Label" parent="CenterContainer/MainVBox/TitlePanel/TitleMargin/TitleVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 64
-text = "GOBLIN RUSH"
-horizontal_alignment = 1
-mouse_filter = 2
-
-[node name="Subtitle" type="Label" parent="CenterContainer/MainVBox/TitlePanel/TitleMargin/TitleVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 0.85)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 22
-text = "哥布林来袭 · 像素射击"
-horizontal_alignment = 1
-mouse_filter = 2
-
-[node name="Spacer" type="Control" parent="CenterContainer/MainVBox"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 15)
-
-[node name="BtnStart" type="Button" parent="CenterContainer/MainVBox"]
-layout_mode = 2
-custom_minimum_size = Vector2(360, 100)
-
-[node name="BtnStartOverlay" type="VBoxContainer" parent="CenterContainer/MainVBox/BtnStart"]
-layout_mode = 0
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 30
-offset_top = 8
-offset_right = -30
-offset_bottom = -8
-alignment = 1
-theme_override_constants/separation = 2
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="SafeMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="CenterContainer" type="CenterContainer" parent="SafeMargin"]
+layout_mode = 2
 mouse_filter = 2
 
-[node name="BtnStartLabel" type="Label" parent="CenterContainer/MainVBox/BtnStart/BtnStartOverlay"]
+[node name="MainVBox" type="VBoxContainer" parent="SafeMargin/CenterContainer"]
+custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="GameIcon" type="TextureRect" parent="SafeMargin/CenterContainer/MainVBox"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+texture = ExtResource("3_emblem")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="SafeMargin/CenterContainer/MainVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.902, 0.722, 0.29, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.055, 0.047, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 54
+text = "GOBLIN RUSH"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="SafeMargin/CenterContainer/MainVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.949, 0.918, 0.843, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.055, 0.047, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 20
+text = "哥布林来袭 · 像素射击"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="SafeMargin/CenterContainer/MainVBox"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="BtnStart" type="Button" parent="SafeMargin/CenterContainer/MainVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 88)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_neighbor_bottom = NodePath("../SecondaryRow/BtnSettings")
+theme_type_variation = &"PrimaryButton"
+
+[node name="BtnStartOverlay" type="HBoxContainer" parent="SafeMargin/CenterContainer/MainVBox/BtnStart"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 8.0
+offset_right = -30.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="SafeMargin/CenterContainer/MainVBox/BtnStart/BtnStartOverlay"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+mouse_filter = 2
+texture = SubResource("AtlasStart")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextVBox" type="VBoxContainer" parent="SafeMargin/CenterContainer/MainVBox/BtnStart/BtnStartOverlay"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="BtnStartLabel" type="Label" parent="SafeMargin/CenterContainer/MainVBox/BtnStart/BtnStartOverlay/TextVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.949, 0.918, 0.843, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.055, 0.047, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 28
 text = "开始游戏"
 horizontal_alignment = 1
-mouse_filter = 2
 
-[node name="BtnStartDesc" type="Label" parent="CenterContainer/MainVBox/BtnStart/BtnStartOverlay"]
+[node name="BtnStartDesc" type="Label" parent="SafeMargin/CenterContainer/MainVBox/BtnStart/BtnStartOverlay/TextVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.79, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.055, 0.047, 1)
 theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 14
 text = "选择存档，进入哥布林巢穴"
 horizontal_alignment = 1
-mouse_filter = 2
 
-[node name="BtnSettings" type="Button" parent="CenterContainer/MainVBox"]
+[node name="SecondaryRow" type="HBoxContainer" parent="SafeMargin/CenterContainer/MainVBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(360, 100)
+mouse_filter = 2
+theme_override_constants/separation = 16
+alignment = 1
 
-[node name="BtnSettingsOverlay" type="VBoxContainer" parent="CenterContainer/MainVBox/BtnSettings"]
-layout_mode = 0
+[node name="BtnSettings" type="Button" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 68)
+layout_mode = 2
+focus_neighbor_top = NodePath("../../BtnStart")
+focus_neighbor_right = NodePath("../BtnExit")
+theme_type_variation = &"CardButton"
+
+[node name="BtnSettingsOverlay" type="HBoxContainer" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow/BtnSettings"]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 30
-offset_top = 8
-offset_right = -30
-offset_bottom = -8
-alignment = 1
-theme_override_constants/separation = 2
+offset_left = 14.0
+offset_top = 6.0
+offset_right = -14.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
 
-[node name="BtnSettingsLabel" type="Label" parent="CenterContainer/MainVBox/BtnSettings/BtnSettingsOverlay"]
+[node name="Icon" type="TextureRect" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow/BtnSettings/BtnSettingsOverlay"]
+custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 28
+mouse_filter = 2
+texture = SubResource("AtlasSettings")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextVBox" type="VBoxContainer" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow/BtnSettings/BtnSettingsOverlay"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="BtnSettingsLabel" type="Label" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow/BtnSettings/BtnSettingsOverlay/TextVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.949, 0.918, 0.843, 1)
+theme_override_font_sizes/font_size = 20
 text = "设置"
 horizontal_alignment = 1
-mouse_filter = 2
 
-[node name="BtnSettingsDesc" type="Label" parent="CenterContainer/MainVBox/BtnSettings/BtnSettingsOverlay"]
+[node name="BtnSettingsDesc" type="Label" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow/BtnSettings/BtnSettingsOverlay/TextVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 14
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.667, 0.714, 0.675, 1)
+theme_override_font_sizes/font_size = 12
 text = "调整分辨率、窗口、音量"
 horizontal_alignment = 1
-mouse_filter = 2
 
-[node name="BtnExit" type="Button" parent="CenterContainer/MainVBox"]
+[node name="BtnExit" type="Button" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 68)
 layout_mode = 2
-custom_minimum_size = Vector2(360, 100)
+focus_neighbor_left = NodePath("../BtnSettings")
+focus_neighbor_top = NodePath("../../BtnStart")
+theme_type_variation = &"CardButton"
 
-[node name="BtnExitOverlay" type="VBoxContainer" parent="CenterContainer/MainVBox/BtnExit"]
-layout_mode = 0
+[node name="BtnExitOverlay" type="VBoxContainer" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow/BtnExit"]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 30
-offset_top = 8
-offset_right = -30
-offset_bottom = -8
-alignment = 1
-theme_override_constants/separation = 2
+offset_left = 14.0
+offset_top = 6.0
+offset_right = -14.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
 
-[node name="BtnExitLabel" type="Label" parent="CenterContainer/MainVBox/BtnExit/BtnExitOverlay"]
+[node name="BtnExitLabel" type="Label" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow/BtnExit/BtnExitOverlay"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 28
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.949, 0.918, 0.843, 1)
+theme_override_font_sizes/font_size = 20
 text = "退出游戏"
 horizontal_alignment = 1
-mouse_filter = 2
 
-[node name="BtnExitDesc" type="Label" parent="CenterContainer/MainVBox/BtnExit/BtnExitOverlay"]
+[node name="BtnExitDesc" type="Label" parent="SafeMargin/CenterContainer/MainVBox/SecondaryRow/BtnExit/BtnExitOverlay"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 14
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.667, 0.714, 0.675, 1)
+theme_override_font_sizes/font_size = 12
 text = "离开游戏，存档已自动保存"
 horizontal_alignment = 1
-mouse_filter = 2
 
 [node name="Footer" type="Label" parent="."]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -217,7 +268,10 @@ offset_left = 20.0
 offset_top = -30.0
 offset_right = -20.0
 offset_bottom = -8.0
-theme_override_colors/font_color = Color(1, 1, 1, 0.4)
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.667, 0.714, 0.675, 0.7)
 theme_override_font_sizes/font_size = 12
 text = "v1.0.0  © GOBLIN RUSH"
 horizontal_alignment = 2

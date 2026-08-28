@@ -34,6 +34,7 @@ func _default_settings() -> Dictionary:
 		"sfx_volume": 1.0,
 		"resolution": "1280x720",
 		"window_mode": "windowed",  # windowed / fullscreen
+		"reduced_motion": false,
 		"lang": "zh_CN",
 	}
 
