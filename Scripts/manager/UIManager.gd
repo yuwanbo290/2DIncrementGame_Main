@@ -1,16 +1,17 @@
 extends Node
 
-var ui_cache = {}
+var ui_cache: Dictionary = {}
+var ui_root: Node
 
-var ui_root: Node = null
 
-
-func initialize(root: Node):
+func initialize(root: Node) -> void:
 	ui_root = root
 
-func open_ui(ui_name: String, path: String):
+func open_ui(ui_name: String, path: String) -> void:
 	if ui_cache.has(ui_name):
-		ui_cache[ui_name].on_open()
+		var cached_ui: UIBase = ui_cache[ui_name] as UIBase
+		cached_ui.show()
+		cached_ui.refresh()
 		return
 
 	# 如果 ui_root 无效（如场景切换后），使用 SceneTree.root 作为后备
@@ -23,37 +24,25 @@ func open_ui(ui_name: String, path: String):
 		push_error("无法加载场景: " + path)
 		return
 
-	var ui: Node = scene_res.instantiate()
-	ui._ui_managed = true  # 标记为由 UIManager 管理，_ready 不自动初始化
+	var ui: UIBase = scene_res.instantiate() as UIBase
+	if ui == null:
+		push_error("UI 场景根节点必须继承 UIBase: " + path)
+		return
 	root.add_child(ui)
-
-	ui.on_create()
-	ui.on_open()
-
 	ui_cache[ui_name] = ui
 
-func close_ui(ui_name: String):
+func close_ui(ui_name: String) -> void:
 	if not ui_cache.has(ui_name):
 		return
-
-	ui_cache[ui_name].on_close()
-
-func destroy_ui(ui_name: String):
-	if not ui_cache.has(ui_name):
-		return
-
-	var ui = ui_cache[ui_name]
-
-	ui.on_destroy()
-
-	ui_cache.erase(ui_name)
+	var ui: UIBase = ui_cache[ui_name] as UIBase
+	ui.hide()
 
 
 ## 切换场景前清理所有缓存的 UI
-func clear_all():
+func clear_all() -> void:
 	for ui_name in ui_cache.keys():
-		var ui = ui_cache[ui_name]
+		var ui: UIBase = ui_cache[ui_name] as UIBase
 		if is_instance_valid(ui):
-			ui.on_destroy()
+			ui.queue_free()
 	ui_cache.clear()
 	ui_root = null

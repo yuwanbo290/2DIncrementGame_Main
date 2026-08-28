@@ -1,41 +1,17 @@
 extends UIBase
 
 
-func on_create():
-	var back_btn: TextureButton = $TopBar/BackBtn as TextureButton
-	var upgrade_btn: TextureButton = $MainContainer/VBox/MainRow/LeftVBox/UpgradeBtn as TextureButton
-	var shop_btn: TextureButton = $MainContainer/VBox/MainRow/LeftVBox/ShopBtn as TextureButton
-	var weapon_btn: TextureButton = $MainContainer/VBox/MainRow/CenterVBox/WeaponBtn as TextureButton
-	var start_btn: TextureButton = $MainContainer/VBox/MainRow/CenterVBox/StartHuntBtn as TextureButton
-
-	if back_btn:
-		back_btn.pressed.connect(_on_back_pressed)
-		_add_hover(back_btn)
-	if upgrade_btn:
-		upgrade_btn.pressed.connect(_on_upgrade_pressed)
-		_add_hover(upgrade_btn)
-	if shop_btn:
-		shop_btn.pressed.connect(_on_shop_pressed)
-		_add_hover(shop_btn)
-	if weapon_btn:
-		weapon_btn.pressed.connect(_on_weapon_pressed)
-		_add_hover(weapon_btn)
-	if start_btn:
-		start_btn.pressed.connect(_on_start_battle_pressed)
-		_add_hover(start_btn)
-
-
-func on_open():
+func _ready() -> void:
+	($TopBar/BackBtn as Button).pressed.connect(_on_back_pressed)
+	($MainContainer/VBox/MainRow/LeftVBox/UpgradeBtn as Button).pressed.connect(_on_upgrade_pressed)
+	($MainContainer/VBox/MainRow/LeftVBox/ShopBtn as Button).pressed.connect(_on_shop_pressed)
+	($MainContainer/VBox/MainRow/CenterVBox/WeaponBtn as Button).pressed.connect(_on_weapon_pressed)
+	($MainContainer/VBox/MainRow/CenterVBox/StartHuntBtn as Button).pressed.connect(_on_start_battle_pressed)
 	super()
+
+
+func refresh() -> void:
 	_refresh_top_bar()
-
-
-func on_close():
-	super()
-
-
-func on_destroy():
-	super()
 
 
 func _refresh_top_bar() -> void:

@@ -1,30 +1,9 @@
 extends UIBase
 
-func on_create():
-	var btn_start: TextureButton = $CenterContainer/MainVBox/BtnStart as TextureButton
-	var btn_settings: TextureButton = $CenterContainer/MainVBox/BtnSettings as TextureButton
-	var btn_exit: TextureButton = $CenterContainer/MainVBox/BtnExit as TextureButton
-
-	if btn_start:
-		btn_start.pressed.connect(_on_start_pressed)
-		_add_hover(btn_start)
-	if btn_settings:
-		btn_settings.pressed.connect(_on_settings_pressed)
-		_add_hover(btn_settings)
-	if btn_exit:
-		btn_exit.pressed.connect(_on_exit_pressed)
-		_add_hover(btn_exit)
-
-
-func on_open():
-	super()
-
-
-func on_close():
-	super()
-
-
-func on_destroy():
+func _ready() -> void:
+	($CenterContainer/MainVBox/BtnStart as Button).pressed.connect(_on_start_pressed)
+	($CenterContainer/MainVBox/BtnSettings as Button).pressed.connect(_on_settings_pressed)
+	($CenterContainer/MainVBox/BtnExit as Button).pressed.connect(_on_exit_pressed)
 	super()
 
 

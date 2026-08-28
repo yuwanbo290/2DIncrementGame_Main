@@ -41,21 +41,18 @@ var _node_pos: Dictionary = {}
 var _selected_skill: int = 0
 
 
-func on_create():
-	var back_btn: TextureButton = $TopBar/BackBtn as TextureButton
-	if back_btn:
-		back_btn.pressed.connect(_on_back_pressed)
-		_add_hover(back_btn)
+func _ready() -> void:
+	($TopBar/BackBtn as Button).pressed.connect(_on_back_pressed)
 	_canvas = $MainContainer/Panel/HBox/LeftMargin/ScrollContainer/TreeCanvas as SkillTreeCanvas
 	if _canvas == null:
 		push_error("[局外养成] 缺少 TreeCanvas 画布节点")
 	_detail_vbox = $MainContainer/Panel/HBox/RightPanel/Margin/DetailVBox as VBoxContainer
 	if _detail_vbox == null:
 		push_error("[局外养成] 缺少 DetailVBox 详情容器")
-
-
-func on_open():
 	super()
+
+
+func refresh() -> void:
 	_refresh_gold()
 	# 默认选中第一个技能（根节点）展示详情
 	if _selected_skill <= 0:
@@ -64,15 +61,6 @@ func on_open():
 			_selected_skill = int(rows[0].get("Id", 0))
 	_build_tree()
 	_build_detail()
-
-
-func on_close():
-	super()
-
-
-func on_destroy():
-	super()
-	_clear_tree()
 
 
 func _refresh_gold() -> void:
@@ -316,7 +304,7 @@ func _build_detail() -> void:
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_detail_vbox.add_child(spacer)
 
-	var upg_btn: TextureButton
+	var upg_btn: Button
 	if not unlocked:
 		upg_btn = _create_text_button("需前置技能", BUTTON_SIZE, COLOR_DISABLED)
 		upg_btn.disabled = true
@@ -329,7 +317,6 @@ func _build_detail() -> void:
 		upg_btn.disabled = not can_afford
 		if can_afford:
 			upg_btn.pressed.connect(_on_upgrade_pressed.bind(skill_id, next_cost))
-			_add_hover(upg_btn)
 	upg_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_detail_vbox.add_child(upg_btn)
 

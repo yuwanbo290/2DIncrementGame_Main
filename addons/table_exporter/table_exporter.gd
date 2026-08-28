@@ -1,12 +1,12 @@
 @tool
 extends EditorPlugin
 ## 导表插件：在工具栏加「导表」按钮，并在「项目 > 工具」菜单加同名项。
-## 点击后把 data/ 下的所有源表（.xlsx / .csv）导出为 Resources/Tables/ 下的 .tres。
+## 点击后把 data/ 下的所有 .xlsx 源表导出为 Resources/Tables/ 下的 .tres。
 
 
 const TableExporterCore = preload("res://addons/table_exporter/table_exporter_core.gd")
 
-const MENU_NAME := "导表：xlsx/csv → .tres"
+const MENU_NAME := "导表：xlsx → .tres"
 
 var _button: Button
 
@@ -14,7 +14,7 @@ var _button: Button
 func _enter_tree() -> void:
 	_button = Button.new()
 	_button.text = "导表"
-	_button.tooltip_text = "将 data/ 下的源表（.xlsx / .csv）导出为 Resources/Tables/ 下的 .tres"
+	_button.tooltip_text = "将 data/ 下的 .xlsx 源表导出为 Resources/Tables/ 下的 .tres"
 	_button.pressed.connect(_on_export)
 	add_control_to_container(EditorPlugin.CONTAINER_TOOLBAR, _button)
 	add_tool_menu_item(MENU_NAME, _on_export)

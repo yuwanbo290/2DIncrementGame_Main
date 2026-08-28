@@ -1,21 +1,19 @@
 @tool
 class_name TableExporterCore
 extends RefCounted
-## 导表核心逻辑：扫描 data/ 目录下的源表（.xlsx / .csv），逐行解析，生成 .tres（TableResource）。
+## 导表核心逻辑：扫描 data/ 目录下的 .xlsx 源表，逐行解析，生成 .tres（TableResource）。
 ##
 ## 源表结构（五段式，缺一不可）：
 ##   第 1 行 字段名 / 第 2 行 类型 / 第 3 行 中文备注 / 第 4 行 默认值 / 第 5 行起 数据
 ## 其中「中文备注」「默认值」两行是给策划看的元信息，导出时跳过；
 ## 字段值按第 2 行声明的类型（int / float / bool / string）转换。
 ##
-## 推荐用 .xlsx：其内部是 UTF-8 的 XML，天然没有 CSV 的中文编码问题，
-## 且 Godot 不会把 .xlsx 误当翻译表导入（不会产生 .translation 冗余）。
-## 同名时 .xlsx 优先于 .csv。
+## .xlsx 内部是 UTF-8 XML，中文稳定且不会被 Godot 误当翻译表导入。
 
 
 const TableResource = preload("res://Scripts/core/table_resource.gd")
 
-## 源表目录（策划维护的 .xlsx / .csv 放这里）
+## 源表目录（策划维护的 .xlsx 放这里）
 const DATA_DIR := "res://data"
 ## 表资源输出目录
 const OUT_DIR := "res://Resources/Tables"
@@ -34,11 +32,11 @@ const XLSX_SHARED_STRINGS := "xl/sharedStrings.xml"
 const XLSX_SHEET_DIR := "xl/worksheets/"
 
 
-## 导出 DATA_DIR 下的全部源表（.xlsx / .csv）
+## 导出 DATA_DIR 下的全部 .xlsx 源表。
 static func export_all() -> void:
 	var sources: Dictionary = _collect_sources(DATA_DIR)
 	if sources.is_empty():
-		push_warning("[导表] 未在 %s 找到源表（.xlsx / .csv）" % DATA_DIR)
+		push_warning("[导表] 未在 %s 找到 .xlsx 源表" % DATA_DIR)
 		return
 	var names: Array = sources.keys()
 	names.sort()
@@ -49,18 +47,12 @@ static func export_all() -> void:
 	print("[导表] 完成：成功 %d / 共 %d 张表 → %s" % [ok_count, names.size(), OUT_DIR])
 
 
-## 导出单个源表文件（按扩展名分派 xlsx / csv）
+## 导出单个 .xlsx 源表文件。
 static func export_file(source_path: String) -> bool:
-	var ext: String = source_path.get_extension().to_lower()
-	var grid: Array = []
-	match ext:
-		"xlsx":
-			grid = _read_xlsx(source_path)
-		"csv":
-			grid = _read_csv(source_path)
-		_:
-			push_error("[导表] 不支持的源表格式（请用 .xlsx 或 .csv）: %s" % source_path)
-			return false
+	if source_path.get_extension().to_lower() != "xlsx":
+		push_error("[导表] 不支持的源表格式（请用 .xlsx）: %s" % source_path)
+		return false
+	var grid: Array = _read_xlsx(source_path)
 	if grid.is_empty():
 		return false
 
@@ -92,7 +84,7 @@ static func export_file(source_path: String) -> bool:
 			row[key] = _cast_by_type(raw, type_name)
 		table.rows.append(row)
 
-	_ensure_dir(OUT_DIR)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT_DIR))
 	var out_path: String = OUT_DIR.path_join(table.table_name + ".tres")
 	var err: int = ResourceSaver.save(table, out_path)
 	if err != OK:
@@ -104,7 +96,7 @@ static func export_file(source_path: String) -> bool:
 
 # ---- 源表收集 ----
 
-## 收集 data/ 下的源表：表名 -> 文件路径（同名时 .xlsx 优先于 .csv）
+## 收集 data/ 下的 .xlsx 源表：表名 -> 文件路径。
 static func _collect_sources(dir: String) -> Dictionary:
 	var out: Dictionary = {}
 	var d: DirAccess = DirAccess.open(dir)
@@ -121,10 +113,7 @@ static func _collect_sources(dir: String) -> Dictionary:
 			if base.begins_with("~$"):
 				pass
 			elif ext == "xlsx":
-				out[base] = dir.path_join(f)  # xlsx 优先，直接覆盖同名 csv
-			elif ext == "csv":
-				if not out.has(base):
-					out[base] = dir.path_join(f)
+				out[base] = dir.path_join(f)
 			elif ext == "xls":
 				push_warning("[导表] 不支持旧版 .xls，请在 Excel/WPS 中另存为 .xlsx: %s" % f)
 		f = d.get_next()
@@ -345,70 +334,6 @@ static func _put_row(grid: Array, row_number: int, row: Array) -> void:
 	grid[row_number - 1] = row
 
 
-# ---- csv 读取 ----
-
-## 读取 CSV 为二维数组（强制 UTF-8；非 UTF-8 直接报错，避免静默产出乱码）
-static func _read_csv(path: String) -> Array:
-	var file: FileAccess = FileAccess.open(path, FileAccess.READ)
-	if file == null:
-		push_error("[导表] 无法读取 CSV: %s" % path)
-		return []
-	var text: String = file.get_as_text()
-	file.close()
-
-	# 去掉 UTF-8 BOM（Excel 另存的 CSV 常带 BOM，会污染首个表头）
-	if text.begins_with("\uFEFF"):
-		text = text.substr(1)
-
-	# 非 UTF-8（如 Excel 在中文系统默认另存的 GBK）会解出替换字符 U+FFFD，
-	# 此时中文已不可逆损坏，必须中止而不是导出乱码表。
-	if text.contains("\uFFFD"):
-		push_error("[导表] CSV 不是 UTF-8 编码，中文会变乱码，已跳过：%s\n  → 请在 Excel/WPS 中另存为 .xlsx（推荐），或另存为「CSV UTF-8」" % path)
-		return []
-
-	return _parse_csv(text)
-
-
-## 解析 CSV 文本为二维数组（保留空行，处理引号/逗号/换行）
-static func _parse_csv(text: String) -> Array:
-	text = text.replace("\r\n", "\n").replace("\r", "\n")
-	var result: Array = []
-	var row: Array = []
-	var field: String = ""
-	var in_quotes: bool = false
-	var i: int = 0
-	while i < text.length():
-		var c: String = text[i]
-		if in_quotes:
-			if c == '"':
-				if i + 1 < text.length() and text[i + 1] == '"':
-					field += '"'
-					i += 1
-				else:
-					in_quotes = false
-			else:
-				field += c
-		else:
-			if c == '"':
-				in_quotes = true
-			elif c == ',':
-				row.append(field)
-				field = ""
-			elif c == '\n':
-				row.append(field)
-				field = ""
-				result.append(row)
-				row = []
-			else:
-				field += c
-		i += 1
-
-	if field != "" or not row.is_empty():
-		row.append(field)
-		result.append(row)
-	return result
-
-
 # ---- 公共工具 ----
 
 ## 是否空行（所有单元格去空白后为空）
@@ -442,12 +367,3 @@ static func _cast_by_type(raw: String, type_name: String) -> Variant:
 			return lower == "true" or lower == "1"
 		_:
 			return s
-
-
-## 确保目录存在（创建多级目录）
-static func _ensure_dir(dir: String) -> void:
-	var d: DirAccess = DirAccess.open("res://")
-	if d == null:
-		push_error("[导表] 无法打开 res://")
-		return
-	d.make_dir_recursive(dir.replace("res://", ""))

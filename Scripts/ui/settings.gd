@@ -18,7 +18,7 @@ const WINDOW_MODES: Array[String] = [
 var _current_settings: Dictionary = {}
 
 
-func on_create():
+func _ready() -> void:
 	var res_option: OptionButton = $MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/DisplaySection/ResolutionRow/ResolutionOption as OptionButton
 	res_option.clear()
 	for r in RESOLUTIONS:
@@ -42,29 +42,17 @@ func on_create():
 	music_slider.value_changed.connect(_on_music_volume_changed)
 	sfx_slider.value_changed.connect(_on_sfx_volume_changed)
 
-	var reset_btn: TextureButton = $MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/ResetBtn as TextureButton
-	var save_btn: TextureButton = $MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/SaveBtn as TextureButton
+	var reset_btn: Button = $MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/ResetBtn as Button
+	var save_btn: Button = $MainContainer/VBox/ContentPanel/ContentMargin/ContentVBox/BtnRow/SaveBtn as Button
 
-	if reset_btn:
-		reset_btn.pressed.connect(_on_reset_pressed)
-		_add_hover(reset_btn)
+	reset_btn.pressed.connect(_on_reset_pressed)
 	# 保存按钮改为返回：设置已即时保存，无需手动保存
-	if save_btn:
-		save_btn.pressed.connect(_on_back_pressed)
-		_add_hover(save_btn)
-
-
-func on_open():
+	save_btn.pressed.connect(_on_back_pressed)
 	super()
+
+
+func refresh() -> void:
 	_load_settings()
-
-
-func on_close():
-	super()
-
-
-func on_destroy():
-	super()
 
 
 func _load_settings() -> void:
@@ -111,34 +99,34 @@ func _update_volume_labels() -> void:
 func _on_resolution_changed(idx: int) -> void:
 	var res: String = RESOLUTIONS[idx]
 	_current_settings["resolution"] = res
-	_apply_resolution(res)
+	GameManager.apply_settings(_current_settings, get_window())
 
 
 func _on_window_mode_changed(idx: int) -> void:
 	var mode_map: Dictionary = {0: "windowed", 1: "fullscreen", 2: "borderless"}
 	var wm: String = mode_map.get(idx, "windowed")
 	_current_settings["window_mode"] = wm
-	_apply_window_mode(wm)
+	GameManager.apply_settings(_current_settings, get_window())
 
 
 func _on_master_volume_changed(value: float) -> void:
 	_current_settings["master_volume"] = value
 	_update_volume_labels()
-	_apply_volume("master", value)
+	GameManager.apply_settings(_current_settings, get_window())
 	_save_immediate()
 
 
 func _on_music_volume_changed(value: float) -> void:
 	_current_settings["music_volume"] = value
 	_update_volume_labels()
-	_apply_volume("music", value)
+	GameManager.apply_settings(_current_settings, get_window())
 	_save_immediate()
 
 
 func _on_sfx_volume_changed(value: float) -> void:
 	_current_settings["sfx_volume"] = value
 	_update_volume_labels()
-	_apply_volume("sfx", value)
+	GameManager.apply_settings(_current_settings, get_window())
 	_save_immediate()
 
 
@@ -160,53 +148,8 @@ func _on_reset_pressed() -> void:
 	SaveSystem.data["settings"] = defaults.duplicate(true)
 	SaveSystem.save()
 	_load_settings()
-	_apply_all()
+	GameManager.apply_settings(_current_settings, get_window())
 	_show_toast("已恢复默认设置")
-
-
-func _apply_all() -> void:
-	_apply_resolution(_current_settings.get("resolution", "1280x720"))
-	_apply_window_mode(_current_settings.get("window_mode", "windowed"))
-	_apply_volume("master", _current_settings.get("master_volume", 1.0))
-	_apply_volume("music", _current_settings.get("music_volume", 1.0))
-	_apply_volume("sfx", _current_settings.get("sfx_volume", 1.0))
-
-
-func _apply_resolution(res: String) -> void:
-	var parts: PackedStringArray = res.split("x")
-	if parts.size() != 2:
-		return
-	var w: int = int(parts[0])
-	var h: int = int(parts[1])
-	get_window().size = Vector2i(w, h)
-
-
-func _apply_window_mode(wm: String) -> void:
-	var window: Window = get_window()
-	match wm:
-		"fullscreen":
-			window.mode = Window.MODE_FULLSCREEN
-		"borderless":
-			window.mode = Window.MODE_EXCLUSIVE_FULLSCREEN
-		_:
-			window.mode = Window.MODE_WINDOWED
-
-
-func _apply_volume(channel: String, value: float) -> void:
-	var bus_name: String = ""
-	match channel:
-		"master":
-			bus_name = "Master"
-		"music":
-			bus_name = "Music"
-		"sfx":
-			bus_name = "SFX"
-		_:
-			return
-
-	var bus_idx: int = AudioServer.get_bus_index(bus_name)
-	if bus_idx != -1:
-		AudioServer.set_bus_volume_db(bus_idx, linear_to_db(value))
 
 
 func _save_immediate() -> void:

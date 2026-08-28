@@ -31,26 +31,14 @@ const COLOR_DISABLED := Color(0.5, 0.5, 0.5, 1)
 const COLOR_WARN := Color(1, 0.3, 0.3, 1)
 
 
-func on_create():
-	var back_btn: TextureButton = $TopBar/BackBtn as TextureButton
-	if back_btn:
-		back_btn.pressed.connect(_on_back_pressed)
-		_add_hover(back_btn)
-
-
-func on_open():
+func _ready() -> void:
+	($TopBar/BackBtn as Button).pressed.connect(_on_back_pressed)
 	super()
+
+
+func refresh() -> void:
 	_refresh_gold()
 	_build_shop_list()
-
-
-func on_close():
-	super()
-
-
-func on_destroy():
-	super()
-	_clear_shop_list()
 
 
 func _refresh_gold() -> void:
@@ -130,12 +118,11 @@ func _create_item_row(item: Dictionary) -> Panel:
 	var btn_text: String = str(state.get("text", ""))
 	var btn_color: Color = state.get("color", COLOR_TEXT)
 
-	var buy_btn: TextureButton = _create_text_button(btn_text, BUTTON_SIZE, btn_color)
+	var buy_btn: Button = _create_text_button(btn_text, BUTTON_SIZE, btn_color)
 	buy_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	buy_btn.disabled = not can_buy
 	if can_buy:
 		buy_btn.pressed.connect(_on_buy_pressed.bind(item))
-		_add_hover(buy_btn)
 
 	hbox.add_child(info_vbox)
 	hbox.add_child(cost_label)

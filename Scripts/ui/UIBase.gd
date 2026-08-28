@@ -2,47 +2,18 @@ extends Control
 
 class_name UIBase
 
-## 像素风按钮底图（同文件资源常量化，见 AI开发规范 5.8）
-const BTN_TEXTURE := preload("res://Textures/ui/btn_plain.png")
-
-var is_open: bool = false
-var _initialized: bool = false
-var _ui_managed: bool = false  # 标记是否由 UIManager 管理
+## 全项目按钮使用同一份 Godot Theme，由 Button 原生状态处理 hover / pressed / disabled。
+const BUTTON_THEME := preload("res://Resources/button_theme.tres")
 
 
 func _ready() -> void:
-	# 如果不是由 UIManager 管理（如 change_scene_to_file 直接加载），自动初始化
-	if not _ui_managed:
-		on_create()
-		on_open()
+	theme = BUTTON_THEME
+	refresh()
 
 
-func on_create():
-	_initialized = true
+## UIManager 重新显示缓存界面时调用；子类仅覆写需要刷新的内容。
+func refresh() -> void:
 	pass
-
-
-func on_open():
-	is_open = true
-	visible = true
-
-
-func on_close():
-	is_open = false
-	visible = false
-
-
-func on_destroy():
-	queue_free()
-
-
-# ---- 公共辅助方法（子类可直接调用） ----
-
-## 给按钮添加背景亮度和 hover 高亮效果
-func _add_hover(btn: TextureButton, brightness: float = 1.3) -> void:
-	btn.modulate = Color(1.15, 1.15, 1.15, 1)  # 正常态稍亮，使按钮更显眼
-	btn.mouse_entered.connect(func(): btn.modulate = Color(brightness, brightness, brightness, 1))
-	btn.mouse_exited.connect(func(): btn.modulate = Color(1.15, 1.15, 1.15, 1))
 
 
 ## 刷新金币标签
@@ -78,33 +49,19 @@ func _clear_container(container: Node) -> void:
 			child.queue_free()
 
 
-## 创建带文字标识的像素风按钮（TextureButton + 铺满的居中 Label）
-## 返回的按钮未连接信号、未禁用，由调用方决定 disabled / connect / _add_hover。
+## 创建使用项目统一 Theme 的文字按钮。
+## 返回的按钮未连接信号、未禁用，由调用方决定 disabled / connect。
 ## [param label_text] 按钮文字
 ## [param min_size] 按钮最小尺寸
 ## [param font_color] 文字颜色
-func _create_text_button(label_text: String, min_size: Vector2, font_color: Color = Color(1, 1, 1, 1)) -> TextureButton:
-	var btn: TextureButton = TextureButton.new()
-	# 脚本里必须用 texture_normal（TextureButton 没有 texture 属性）
-	btn.texture_normal = BTN_TEXTURE
-	# 底图为 2240x1680，不忽略纹理尺寸会把最小尺寸撑到原图大小、破坏布局
-	btn.ignore_texture_size = true
-	# 等比覆盖：纹理铺满按钮且不溢出（Godot 默认 STRETCH_KEEP 会按原始像素绘制，纹理 2240 宽会溢出按钮）
-	btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_COVERED
+func _create_text_button(label_text: String, min_size: Vector2, font_color: Color = Color(1, 1, 1, 1)) -> Button:
+	var btn: Button = Button.new()
+	btn.theme = BUTTON_THEME
+	btn.text = label_text
 	btn.custom_minimum_size = min_size
-
-	var label: Label = Label.new()
-	label.text = label_text
-	label.add_theme_font_size_override("font_size", 18)
-	label.add_theme_color_override("font_color", font_color)
-	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
-	label.add_theme_constant_override("outline_size", 3)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	# 子 Label 必须忽略鼠标，否则拦截按钮点击（历史踩坑 2）
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	btn.add_child(label)
-	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	btn.add_theme_color_override("font_color", font_color)
+	btn.add_theme_color_override("font_hover_color", font_color)
+	btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return btn
 
 

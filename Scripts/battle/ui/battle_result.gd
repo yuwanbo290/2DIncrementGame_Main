@@ -8,26 +8,16 @@ extends Control
 ## 玩家点击「返回备战」时发出
 signal continue_pressed
 
-var _damage_label: Label
-var _kills_label: Label
-var _gold_label: Label
-var _stage_label: Label
-var _continue_btn: TextureButton
+@onready var _damage_label: Label = %DamageLabel
+@onready var _kills_label: Label = %KillsLabel
+@onready var _gold_label: Label = %GoldLabel
+@onready var _stage_label: Label = %StageLabel
+@onready var _continue_btn: Button = %ContinueBtn
 
 
 func _ready() -> void:
-	# 显式在 _ready 初始化：@onready + % 在节点 _enter_tree 阶段 unique name 尚未注册，
-	# 动态实例化场景时会导致引用为空，这里统一延迟到 _ready（子节点均已入树）再获取。
-	_damage_label = get_node("%DamageLabel") as Label
-	_kills_label = get_node("%KillsLabel") as Label
-	_gold_label = get_node("%GoldLabel") as Label
-	_stage_label = get_node("%StageLabel") as Label
-	_continue_btn = get_node("%ContinueBtn") as TextureButton
+	_continue_btn.theme = UIBase.BUTTON_THEME
 	_continue_btn.pressed.connect(_on_continue_pressed)
-	# 与 UIBase._add_hover 一致的提亮效果（本类不继承 UIBase，手动实现）
-	_continue_btn.modulate = Color(1.15, 1.15, 1.15, 1)
-	_continue_btn.mouse_entered.connect(func(): _continue_btn.modulate = Color(1.3, 1.3, 1.3, 1))
-	_continue_btn.mouse_exited.connect(func(): _continue_btn.modulate = Color(1.15, 1.15, 1.15, 1))
 	visible = false
 
 

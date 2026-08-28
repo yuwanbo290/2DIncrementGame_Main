@@ -16,26 +16,14 @@ const COLOR_EQUIPPED := Color(0.5, 1, 0.6, 1)
 const COLOR_DISABLED := Color(0.5, 0.5, 0.5, 1)
 
 
-func on_create():
-	var back_btn: TextureButton = $TopBar/BackBtn as TextureButton
-	if back_btn:
-		back_btn.pressed.connect(_on_back_pressed)
-		_add_hover(back_btn)
-
-
-func on_open():
+func _ready() -> void:
+	($TopBar/BackBtn as Button).pressed.connect(_on_back_pressed)
 	super()
+
+
+func refresh() -> void:
 	_refresh_equipped_label()
 	_build_weapon_list()
-
-
-func on_close():
-	super()
-
-
-func on_destroy():
-	super()
-	_clear_weapon_list()
 
 
 func _refresh_equipped_label() -> void:
@@ -139,12 +127,11 @@ func _create_weapon_row(weapon: Dictionary, equipped_id: int) -> Panel:
 		btn_color = COLOR_TEXT
 		can_equip = true
 
-	var equip_btn: TextureButton = _create_text_button(btn_text, BUTTON_SIZE, btn_color)
+	var equip_btn: Button = _create_text_button(btn_text, BUTTON_SIZE, btn_color)
 	equip_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	equip_btn.disabled = not can_equip
 	if can_equip:
 		equip_btn.pressed.connect(_on_equip_pressed.bind(weapon_id))
-		_add_hover(equip_btn)
 
 	hbox.add_child(info_vbox)
 	hbox.add_child(stat_label)

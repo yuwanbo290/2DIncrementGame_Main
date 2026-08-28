@@ -12,13 +12,13 @@ const DRIFT_RANGE := 26.0
 
 
 var _label: Label
-var _velocity: Vector2 = Vector2.ZERO
-var _lifetime: float = 0.0
+var _rise_offset: Vector2
 
 
 ## 在受击位置显示伤害数字；is_crit=true 时使用暴击配色与大字号。
 func setup(damage: float, is_crit: bool) -> void:
-	_velocity = Vector2(randf_range(-DRIFT_RANGE, DRIFT_RANGE), -(CRIT_RISE_SPEED if is_crit else RISE_SPEED))
+	var rise_speed: float = CRIT_RISE_SPEED if is_crit else RISE_SPEED
+	_rise_offset = Vector2(randf_range(-DRIFT_RANGE, DRIFT_RANGE), -rise_speed * LIFETIME * 0.5)
 
 	_label = Label.new()
 	if is_crit:
@@ -45,13 +45,8 @@ func setup(damage: float, is_crit: bool) -> void:
 	_label.position = Vector2(-text_size.x / 2.0, -text_size.y / 2.0)
 
 
-func _process(delta: float) -> void:
-	_lifetime += delta
-	if _lifetime >= LIFETIME:
-		queue_free()
-		return
-	position += _velocity * delta
-	# 上升减速 + 透明度线性淡出
-	_velocity *= maxf(1.0 - delta * 3.0, 0.0)
-	if _label:
-		_label.modulate.a = 1.0 - _lifetime / LIFETIME
+func _ready() -> void:
+	var tween: Tween = create_tween().set_parallel(true)
+	tween.tween_property(self, "position", position + _rise_offset, LIFETIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_label, "modulate:a", 0.0, LIFETIME)
+	tween.chain().tween_callback(queue_free)

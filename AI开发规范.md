@@ -3,7 +3,7 @@
 > **文档定位**：本文件是本项目 AI 开发的最高准则（"宪法"），约束后续所有 AI 会话的编码行为。
 > **适用对象**：所有参与本项目开发的 AI（含当前会话与后续会话）。
 > **优先级**：本文件 > `接口文档.md` > `项目进程汇报.md`。三者冲突时以本文件为准。
-> **强制约定**：**每次开发前必读本文件 + `接口文档.md` + `项目进程汇报.md`；开发完成后必须同步更新 `接口文档.md`（接口变化时）与 `项目进程汇报.md`（追加修改历史）。**
+> **强制约定**：**每次开发前必读本文件 + `接口文档.md`；`项目进程汇报.md` 只提供当前状态速览，历史统一查 Git。接口变化时必须同步更新 `接口文档.md`。**
 
 ---
 
@@ -19,7 +19,7 @@
   ```
 - **两大成长维度（不可混用）**：
   1. **局内成长（Run）**：单局内通过技能 / 局内 Buff 临时增强，局结束即清零，**不落盘**。
-  2. **局外成长（Meta）**：金币 / 统计（当前已实现）；养成等级 / 武器等永久强化维度**待用户提供表结构后实现**，永久保留，**必须落盘**。
+  2. **局外成长（Meta）**：金币 / 统计 / 技能等级 / 武器均已接入，永久保留并落盘。
 - **已确认的玩家行为**：按住鼠标左键持续射击（`click` 输入动作）。
 - **必须遵守的用户硬性规则**：
   - 表结构由用户设定；**只有拿到对应模块的表结构后才开发该模块**，禁止 AI 臆造/擅自增删字段。
@@ -40,9 +40,8 @@
 **硬性禁止事项**：
 - 禁止用 `:=` 推断 `Dictionary.get()`、`JSON.parse_string()` 等返回 `Variant` 的表达式——**必须显式声明类型**（如 `var parsed: Variant = ...`）。
 - 禁止使用 Godot 3 的 `get_tree().has_node()`（Godot 4 无此方法，用 `get_tree().root.has_node()`）。
-- **TextureButton 没有 `texture` 属性**（.tscn 与脚本都没有）。设底图必须用 `texture_normal`，写 `texture = ...` 会被 Godot 静默丢弃、按钮底图永不显示。
-- **TextureButton 必须同时设 `ignore_texture_size = true`**：底图 `btn_plain.png` 为 2240×692，不忽略原图尺寸会把按钮最小尺寸撑到原图大小、直接破坏布局。忽略后由 `custom_minimum_size` 决定尺寸，且**必须显式设 `stretch_mode = STRETCH_KEEP_ASPECT_COVERED`**——Godot 4.7 的 TextureButton 默认 `stretch_mode = STRETCH_KEEP`（按原始像素绘制），不显式设置时 2240 宽的底图会直接溢出按钮、盖住半个界面。
-- 动态创建按钮统一调 `UIBase._create_text_button()`，不要手搓（该方法已含上述两项）。
+- 按钮统一使用 Godot `Button`；像素底图和 hover/pressed/disabled 状态由 `Resources/button_theme.tres` 管理。
+- 动态创建按钮统一调用 `UIBase._create_text_button()`，不要重复创建 Label 或连接 hover 信号。
 - 禁止用 ColorRect 当 UI 背景（用 `TextureRect + menu_bg.png`）。
 
 ---
@@ -55,7 +54,7 @@
 │   ├── GameManager.tscn          # 唯一入口（Autoload 由引擎加载，不在此实例化）
 │   ├── battle.tscn               # 战斗场景（change_scene_to_file 进入）
 │   ├── battle/                   # [未来] 战斗子场景：敌人/子弹/掉落物/Boss 等
-│   └── ui/                       # 所有全屏 UI 场景（继承 UIBase）
+│   └── ui/                       # 全屏 UI + 可复用 save_slot/confirm_dialog 场景
 ├── Scripts/
 │   ├── core/                     # 纯逻辑核心系统（不挂场景节点，RefCounted 或 Autoload）
 │   ├── manager/                  # 管理器（Autoload 单例 + 场景级管理器）
@@ -64,7 +63,8 @@
 │   └── autoload/                 # [可选] 若未来单例增多，集中存放 Autoload 脚本
 ├── Resources/
 │   ├── Tables/                   # 导表产物 .tres（只读，勿手改）
-│   └── Config/                   # base_config.tres 等基础配置资源
+│   ├── Config/                   # base_config.tres 等基础配置资源
+│   └── button_theme.tres         # Button 原生状态样式
 ├── data/                         # 源表 .xlsx（策划维护，AI 不手改 .tres）
 ├── Textures/
 │   ├── ui/                       # UI 纹理（menu_bg / btn_* / icon_* / goblin_emblem）
@@ -94,16 +94,16 @@
 > **整改方向（需用户确认后执行）**：`Gamemanager.gd` → `game_manager.gd`，`startui.gd` → `start_ui.gd`。改名必须同步更新 `project.godot` 的 autoload 路径、`GameManager.tscn` 的 script 引用、以及 `接口文档.md`。
 
 ### 4.2 变量 / 函数 / 信号
-- **变量、函数、信号**：一律 snake_case。私有成员前缀 `_`（`_ui_managed`、`_add_hover`）。
+- **变量、函数、信号**：一律 snake_case。私有成员前缀 `_`（`_current_settings`、`_notice_tween`）。
 - **常量**：SCREAMING_SNAKE_CASE（`SAVE_PATH`、`SLOT_COUNT`）。
-- **布尔变量**：用 `is_`/`has_`/`can_` 前缀（`is_open`、`_ui_managed`）。
+- **布尔变量**：用 `is_`/`has_`/`can_` 前缀（`is_boss`、`can_buy`）。
 - **回调函数**：统一 `_on_<对象>_<事件>`（`_on_back_pressed`）。
 
 ### 4.3 数据表字段命名（重要）
 - **用户提供的表**（`Enemy`/`Skill`/`generateProbability`/`skillLevel`/`shop`/`weapons`/`Buff`/`buffLevel`/`waveBoss`）：字段名**以用户原表为准，禁止擅自改名**。
 - **未来 AI 新增的表**：字段名**必须 snake_case**（`fire_rate`、`base_cost`），表名 snake_case 小写。
-- **表名与源文件名一致**：`<表名>.xlsx` ↔ 表名 `<表名>` ↔ `<表名>.tres`（CSV 仅为兼容输入）。
-- 若未来用户要求统一既有 8 张表字段命名，须由用户拍板后批量同步 xlsx / .tres / 引用代码，一次性完成，不留半迁移状态。
+- **表名与源文件名一致**：`<表名>.xlsx` ↔ 表名 `<表名>` ↔ `<表名>.tres`。
+- 若未来用户要求统一既有 9 张表字段命名，须由用户拍板后批量同步 xlsx / .tres / 引用代码，一次性完成，不留半迁移状态。
 
 ### 4.4 场景节点命名
 - 节点名 PascalCase（`TopBar`、`GoldLabel`、`BackBtn`、`MainContainer`）。
@@ -121,7 +121,7 @@
 4. **常量优先**：魔法数字提为 `const`（存档路径、槽位数、默认值、UI 尺寸等）。
 5. **判空**：`FileAccess.open`、`load`、`get_node` 返回值必须判空后再用。
 6. **字典取值**：`Dictionary.get(key, default)` 优先于 `dict[key]`（避免 KeyError）。
-7. **信号连接**：优先在 `on_create()` 里一次性连接，禁止在 `_ready()` 里重复连接（历史已踩坑）。
+7. **信号连接**：在 `_ready()` 里连接一次；动态刷新只放 `refresh()`，避免重复连接。
 8. **资源引用**：运行时 `load("res://...")`；同文件资源用 `preload` 常量化。
 
 ---
@@ -148,7 +148,7 @@ core ← manager ← ui
 ### 6.3 Autoload 单例（现有 3 个，职责边界固定）
 | 单例 | 职责 | 禁止 |
 |---|---|---|
-| `UIManager` | UI 场景的打开/关闭/销毁/缓存 | 不得承载业务逻辑或存档数据 |
+| `UIManager` | UI 场景的创建、显示、隐藏和缓存 | 不得承载业务逻辑或存档数据 |
 | `ConfigSystem` | 只读暴露 `base_config.tres` | 不得被写入/修改 |
 | `SaveSystem` | 存档读写、槽位、设置、金币、统计 | 不得保存局内临时状态（Buff/血量/子弹） |
 
@@ -161,7 +161,6 @@ core ← manager ← ui
 ### 7.1 导表流程（唯一数据入口）
 - 策划改 `data/*.xlsx` → 点编辑器「导表」按钮（`addons/table_exporter`）→ 生成 `Resources/Tables/*.tres`。
 - **源表格式统一用 `.xlsx`**：内部是 UTF-8 的 XML，不存在中文编码问题；且 Godot 不识别该扩展名，不会误当翻译表导入。
-- `.csv` 通道仍保留兼容，但**必须是 UTF-8**；非 UTF-8（中文系统 Excel 另存默认是 GBK）会被导表器报错拦截并跳过。同名时 `.xlsx` 优先。
 - **AI 不手改 `.tres`**（那是产物）；改数据必须改源表后重新导表。
 - 导表前请先在 Excel/WPS 中**关闭该文件**（占用中会导致 ZIPReader 打不开）；`~$xxx.xlsx` 锁文件会被自动跳过。
 - 源表五段式格式（**缺一不可**）：
@@ -193,31 +192,26 @@ var levels: Array[Dictionary] = TableDB.get_all("skillLevel", "Id", 1)
 
 ## 八、UI 开发规范
 
-### 8.1 生命周期（UIBase，禁止破坏）
-```
-on_create()   首次创建：绑定按钮信号、一次性初始化（覆盖需调 super()）
-on_open()     每次打开：刷新动态数据（覆盖需调 super()）
-on_close()    每次关闭：隐藏（覆盖需调 super()）
-on_destroy()  销毁：清理动态创建的子节点（覆盖需调 super()）
-```
+### 8.1 生命周期（UIBase）
+- `_ready()`：连接一次性信号并调用 `super()`；基类随后应用 Button Theme 并触发首次 `refresh()`。
+- `refresh()`：只刷新动态数据；UIManager 重新显示缓存界面时调用。
+- 显示、隐藏、销毁直接使用 Godot `show()` / `hide()` / `queue_free()`。
 - **所有全屏 UI 继承 `UIBase`**，根节点 `Control + anchors_preset=15`。
-- 由 `UIManager` 管理的 UI：`_ready()` 不自动初始化（`_ui_managed=true`）；`change_scene_to_file` 直接加载的 UI 才走 `_ready` 自动初始化。
 - **UI 导航必须通过 UIManager**（`open_ui`/`close_ui`），战斗场景除外（用 `change_scene_to_file`）。
 
 ### 8.2 像素风 UI 规范（统一标准）
 - 背景：`TextureRect + menu_bg.png`（禁用 ColorRect）。
 - 布局：`TopBar`（高 60）+ `MainContainer`（margin 80/20/80/40 + `offset_top=60`）；主菜单 start_ui 例外用 CenterContainer 居中。
 - 标题：黄色 `(1, 0.85, 0.2)` + 黑色描边 `outline_size=4` + 字号 36。
-- 按钮：`TextureButton` + `Label` 文字标识；底图用 `texture_normal = btn_plain.png`，**且必须同时设** `ignore_texture_size = true` **和** `stretch_mode = 6`（KEEP_ASPECT_COVERED，等比铺满不溢出）；**子节点 `mouse_filter=2`**（否则拦截点击）。
+- 按钮：使用 `Button`，文字优先写 `Button.text`；统一继承 `Resources/button_theme.tres` 的像素底图和状态样式。
 - 面板：`StyleBoxFlat` 深色背景 `(0.08, 0.1, 0.14, 0.92)` + 边框 + 圆角 8。
-- hover：所有按钮调 `_add_hover(btn)`（正常态 modulate=1.15，hover 1.3）。
+- hover/pressed/disabled：由 Button Theme 原生状态处理，不手动连接鼠标信号。
 - 资源路径：`Textures/ui/`，命名 `menu_bg.png` / `btn_plain.png` / `goblin_emblem.png` / `icon_coin.jpg`。
-- **`btn_plain.png` 素材说明**：当前为无文字的苔绿木石按钮底图，可复用于所有按钮；按钮文字必须由 Label 渲染，不得写死在纹理内。
+- **`btn_plain.png` 素材说明**：当前为无文字的苔绿木石按钮底图，由 `button_theme.tres` 作为 StyleBoxTexture 使用。
 
 ### 8.3 动态构建 UI（列表类界面）
 - 用 UIBase 公共方法 `_create_list_row` / `_clear_container` / `_refresh_gold_label`，**禁止重复造轮子**。
-- 动态按钮子 Label 必须 `mouse_filter = Control.MOUSE_FILTER_IGNORE`。
-- **先 `add_child()` 再访问 `@onready` 变量**（历史踩坑：动态实例化场景若先 setup 后 add_child 会空指针）。
+- 动态按钮使用 `_create_text_button()`；确认框使用 Godot `ConfirmationDialog`。
 - 列表刷新前先 `_clear_container`，避免残留。
 
 ### 8.4 资源清理与 ext_resource
@@ -240,7 +234,7 @@ on_destroy()  销毁：清理动态创建的子节点（覆盖需调 super()）
 
 ## 十、战斗系统开发规范（增量游戏核心，未来开发重点）
 
-> 战斗场景已实现核心玩法（射击/刷怪/金币/结算与局内 Buff 三选一，敌人仍为代码绘制占位造型，Boss 待做）。以下为架构约定与后续待办。
+> 战斗场景已实现射击、刷怪、金币、结算、局内 Buff 三选一和 waveBoss 波次推进；敌人仍为代码绘制占位造型。
 
 ### 10.1 场景结构约定
 ```
@@ -265,12 +259,12 @@ battle.tscn (Node2D + battle_manager.gd)
 ### 10.4 技能系统规范
 - 技能树：`Skill` 表（`Id`/`previouId`/`maxLevel`）定义解锁前置与满级；`skillLevel` 表定义每级消耗与效果（`changeAttr1~4` + `attrValue1~4` + `desc` + `specialEffect`）。
 - 局外养成界面为**左侧技能树 + 右侧详情**：左侧按 `previouId` 分层（缺失/0 = 根节点，BFS 算深度）排布可点击节点（点击选中金色高亮），前置连线由 `skill_tree_canvas.gd`（`SkillTreeCanvas._draw`）绘制，解锁亮绿/未解锁暗灰；右侧读取 Skill（名称/描述）与 skillLevel（下一级效果 `desc`/费用）表文本展示，并放升级按钮。
-- 属性改动用 `changeAttr*` 字符串映射到运行时属性（如 `atk`/`bulletCount`/`ricochetCount`/`burstCount`），也支持直接写 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg`/`round_time`/`spawn_interval`/`spawn_per_wave`/`exp_gain_rate`/`coin_gain_rate`，战斗开始应用、退出恢复）；特殊能力用 `specialEffect` key 分发（如 `UnlockSuperBullet`）。
+- 属性改动用 `changeAttr*` 字符串映射到运行时属性（如 `atk`/`bulletCount`/`ricochetCount`/`burstCount`），也支持直接写 base_config 字段名；战斗开始复制 `BaseConfig` 后只修改本局副本。未实现的 `specialEffect` 不在运行时预留空分支。
 - 局外养成的技能等级存 `skill_levels`（落盘）；局内技能/临时增益不落盘；局外存金币 + 技能等级 + 统计。
 
 ### 10.5 波次 / Boss 规范
 - 波次推进由 `waveBoss` 表驱动：当前波内普通敌人击杀数达到 `CreateCost` → 刷新 Boss；击杀 Boss → 进入下一波；最后一波 Boss 击杀后直接结算。
-- 普通刷怪按 `generateProbability` 表（`waveNumber`/`enemyId`/`weight`）加权随机；Boss 按 `waveBoss` 表（`waveNumber`/`enemyId`/`weight`）加权随机。
+- 普通刷怪按 `generateProbability` 表（`waveNumber`/`enemyId`/`weight`）加权随机；当前每波直接读取唯一的 `waveBoss` 行。
 - 刷怪节奏用 `base_config` 的 `spawn_interval` / `spawn_per_wave`；单局时长 `round_time`。Boss 存活期间仍正常刷小怪；击杀 Boss 后场上小怪保留、直接进入下一波。
 
 ### 10.6 局内 Buff 规范
@@ -299,7 +293,7 @@ battle.tscn (Node2D + battle_manager.gd)
 ## 十二、AI 开发流程规范（SOP，每次任务强制执行）
 
 ### 12.1 开发前（读）
-1. 读本文件 + `接口文档.md` + `项目进程汇报.md`，确认接口与历史教训。
+1. 读本文件 + `接口文档.md`，用 `项目进程汇报.md` 快速确认当前状态；历史按需查询 Git。
 2. 确认任务属于"用户已提供表结构的模块"，否则先向用户索取表结构，**不臆造**。
 3. 用 `glob`/`read`/`grep` 定位涉及文件，不凭记忆改代码。
 
@@ -309,11 +303,9 @@ battle.tscn (Node2D + battle_manager.gd)
 3. 破坏性重构（改名/改生命周期/改表结构）必须先说明影响面再动手。
 
 ### 12.3 开发后（验 + 记）
-1. **自检**：类型标注、判空、信号重复连接、`mouse_filter`、`texture_normal`、Variant 显式类型。
+1. **自检**：类型标注、必要的判空、信号重复连接、Button Theme、Variant 显式类型。
 2. **验证**：确认无脚本报错（若环境允许跑 Godot 无头模式或经用户运行验证）；导航链路、存档读写、导表结果正确。
-3. **更新文档（强制）**：
-   - 接口有变化 → 更新 `接口文档.md`；
-   - 任何修改 → 在 `项目进程汇报.md` 末尾追加「修改历史」条目（日期 + 标题 + 改动点 + 原因/经验）。
+3. **更新文档**：接口或架构有变化时更新 `接口文档.md` 与当前状态摘要；修改历史写入 Git 提交信息。
 
 ### 12.4 提交交付
 - 交付时列出本次**主要产出文件**（Markdown inline code 路径），并说明是否更新了两份文档。
@@ -325,19 +317,19 @@ battle.tscn (Node2D + battle_manager.gd)
 满足以下全部才算"完成"，否则不算交付：
 - [ ] 无 GDScript 报错 / 警告（尤其 `Dictionary.get()` 用 `:=`、整数除法、`texture` 误用）。
 - [ ] 新代码类型标注完整、判空完整、命名符合第四节。
-- [ ] 数据变更走 CSV 导表，无手改 .tres。
-- [ ] UI 改动遵守像素风规范 + UIManager 导航 + 子节点 `mouse_filter=2`。
+- [ ] 数据变更走 xlsx 导表，无手改 .tres。
+- [ ] UI 改动遵守像素风规范 + UIManager 导航 + Button Theme。
 - [ ] 存档字段变更做了向后兼容 + 版本迁移。
-- [ ] 已同步更新 `接口文档.md` / `项目进程汇报.md`。
+- [ ] 接口或架构变化已同步更新文档。
 - [ ] 未新增与需求无关的文件。
 
 ---
 
 ## 十四、历史踩坑清单（务必避免重犯）
 
-1. **信号重复连接**：`_ready()` 里 `on_create` 导致 11 处 ERROR → 信号连接只在 `on_create()` 一次。
-2. **TextureButton 子节点 `mouse_filter=2`**，否则点击被 Label 拦截。
-3. **TextureButton 底图**：`.tscn` 与脚本都必须用 `texture_normal`（无 `texture` 属性），并配 `ignore_texture_size = true`。
+1. **信号重复连接**：只在 `_ready()` 绑定，`refresh()` 不连接信号。
+2. **按钮状态**：统一交给 `button_theme.tres`，不要为每个按钮重复连接 hover 信号。
+3. **按钮文字**：简单按钮使用 `Button.text`；确需复合内容的子节点必须忽略鼠标。
 4. **Variant 返回值显式类型**（`JSON.parse_string`、`Dictionary.get`），禁用 `:=`。
 5. **Godot 4 无 `get_tree().has_node()`**，用 `get_tree().root.has_node()`。
 6. **`AudioServer.set_bus_volume_db` 传 int 索引**（先 `get_bus_index()`）。
@@ -345,27 +337,26 @@ battle.tscn (Node2D + battle_manager.gd)
 8. **场景切换后 Autoload 的 ui_root 失效**（`change_scene_to_file` 销毁旧场景），`open_ui` 需回退到 `get_tree().root`。
 9. **编辑器保存会清理未用 ext_resource**，勿留悬空纹理引用。
 10. **整数除法**：`int(seconds) / 3600` 会截断 → 用 `int(seconds / 3600.0)`。
-11. **CSV 被 Godot 误当翻译表导入**：data/ 下产生 `.translation` 冗余 → 已根治：`.csv.import` 内 `importer="keep"`；且源表已全面改用 `.xlsx`（Godot 不识别该扩展名，根本不会导入）。
+11. **源表只用 xlsx**：Godot 不会误当翻译表导入，也没有 CSV 中文编码分支。
 12. **无源表的表是"孤儿数据"**：擅自造表（无 xlsx 源）会导致数据源不一致，最终被清理——新增表必须先建源表再导表。
-13. **中文系统 Excel 另存 CSV 默认是 GBK**：导表器按 UTF-8 读会把中文解成 `U+FFFD` 并**静默写入 .tres**，且不同文字可能损坏成同一串乱码（`手枪`/`步枪` 曾都变成 `��ǹ`）。现已改用 xlsx + CSV 编码校验拦截。
+13. **中文源表**：统一保存为 xlsx，避免 CSV/GBK 编码差异。
 14. **xlsx 不会为空单元格写 `<c>` 节点**：解析必须按 `r="B3"` 坐标换算列号补齐空列/空行，否则字段整体错位。
-15. **TextureButton 的 `texture` 属性不存在**：全项目曾有 20 个按钮写成 `texture = ExtResource(...)` 被静默丢弃，底图从未渲染过；且底图 2240×1680，正确设 `texture_normal` 后若不加 `ignore_texture_size = true` 会把布局撑爆。二者必须同时满足。
+15. **大尺寸按钮底图**：不要让原图尺寸参与控件布局；当前由 Theme 的 StyleBoxTexture 统一缩放。
 16. **Panel 不是容器**：`_create_list_row` 返回的 Panel 添加子节点后必须 `set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)`，否则内容不随行宽铺开。
 
 ---
 
 ## 十五、现状诊断与整改清单
 
-> 2026-08-19 已完成一次大清理：回归 `data/` 4 张 CSV，删除无 CSV 的 weapon_table/upgrade_table 及派生代码（商店/装备/局外养成），存档精简为金币 + 统计。
-> 2026-08-20 已完成：源表全面迁移到 `.xlsx`（6 张）、导表器支持 xlsx、`.translation` 冗余根治、全项目 34 个 TextureButton 底图修正、商店/武器模块落地。以下为剩余待办。
+> 当前源表统一为 xlsx，UI 按钮统一为 Button Theme；历史变更查 Git。
 
 ### 15.1 建议整改（P1，需用户确认）
 1. **文件命名统一**：`Gamemanager.gd` → `game_manager.gd`，`startui.gd` → `start_ui.gd`（同步改 autoload/脚本引用）。
 2. **表字段命名统一**：用户表字段为 camelCase/PascalCase（`enemyID`/`Id`/`maxLevel`）。建议由用户决定是否统一，统一时一次性迁移源表 + .tres + 引用代码。
-3. **`confirm_dialog.gd` 重复 `_add_hover`**：与 UIBase 重复，可复用 UIBase 版本（需确认 ConfirmDialog 不继承 UIBase 的原因）。
+3. **资源字段命名**：用户表仍混用 camelCase/PascalCase，是否统一需由用户决定并一次性迁移。
 
 ### 15.2 待补（P2，随功能开发补齐）
-5. **关卡与 Boss 待实现**：核心射击、哥布林刷怪和局内 Buff 已完成；正式关卡波数、击杀门槛与关底 Boss 仍需在设计确认后开发。
+5. **关卡修饰事件待设计**：现有 waveBoss 推进与单局计时保留；下一关随机 modifier 尚未实现。
 6. **商店/武器系统**：已基于 `shop` / `weapons` 表实现（购买 + 装备，落盘 `owned_weapons`/`equipped_weapon`）；数值待用户配置。
 7. **敌人美术资源待接入**：`Textures/enemies/generated/` 已有 17 套生成素材，但 `Enemy.xlsx.texture` 当前为空，敌人仍使用代码绘制的尖耳色块占位造型。
 8. **音频缺失**：设置页有音量 + AudioServer 引用 Master/Music/SFX 总线，但 `Audio/` 无音频文件。
@@ -376,8 +367,8 @@ battle.tscn (Node2D + battle_manager.gd)
 ## 十六、文档维护约定
 
 - 本文件是规范，**改动需用户确认**，不随日常开发频繁变。
-- 新增硬性规则 / 踩坑 / 架构决策时，追加到对应章节并在 `项目进程汇报.md` 记录。
+- 新增硬性规则 / 踩坑 / 架构决策时更新对应章节；历史原因写入 Git 提交信息。
 - 三份文档职责：
   - `AI开发规范.md`（本文件）：**怎么开发**（规则、流程、质量门槛）。
   - `接口文档.md`：**有什么接口可用**（单例/类/场景/表结构）。
-  - `项目进程汇报.md`：**改过什么、为什么**（历史与经验）。
+  - `项目进程汇报.md`：**当前实现到哪里**（状态快照，不重复 Git 历史）。

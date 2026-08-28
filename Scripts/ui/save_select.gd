@@ -2,51 +2,34 @@ extends UIBase
 
 const GAME_SCENE: String = "res://Scenes/ui/preparation.tscn"
 
-func on_create():
-	var back_btn: TextureButton = $TopBar/BackBtn as TextureButton
-	if back_btn:
-		back_btn.pressed.connect(_on_back_pressed)
-		_add_hover(back_btn)
-
-	_bind_slot(0)
-	_bind_slot(1)
-	_bind_slot(2)
+@onready var _slot_container: HBoxContainer = $MainContainer/VBox/SlotContainer
 
 
-func on_open():
+func _ready() -> void:
+	($TopBar/BackBtn as Button).pressed.connect(_on_back_pressed)
+	for slot_index in SaveSystem.SLOT_COUNT:
+		_bind_slot(slot_index)
 	super()
+
+
+func refresh() -> void:
 	refresh_all_slots()
 
 
-func on_close():
-	super()
-
-
-func on_destroy():
-	super()
-
-
 func _bind_slot(slot_index: int) -> void:
-	var path_prefix: String = "MainContainer/VBox/SlotContainer/Slot%d/Slot%dMargin/Slot%dVBox/Slot%dBtns" % [slot_index, slot_index, slot_index, slot_index]
-	var select_btn: TextureButton = get_node(path_prefix + "/Slot%dSelectBtn" % slot_index) as TextureButton
-	var delete_btn: TextureButton = get_node(path_prefix + "/Slot%dDeleteBtn" % slot_index) as TextureButton
-
-	if select_btn:
-		select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
-		_add_hover(select_btn)
-	if delete_btn:
-		delete_btn.pressed.connect(_on_slot_delete.bind(slot_index))
-		_add_hover(delete_btn)
+	var panel: Panel = _slot_container.get_child(slot_index) as Panel
+	var select_btn: Button = panel.get_node("Margin/VBox/Buttons/SelectBtn") as Button
+	var delete_btn: Button = panel.get_node("Margin/VBox/Buttons/DeleteBtn") as Button
+	select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
+	delete_btn.pressed.connect(_on_slot_delete.bind(slot_index))
 
 	# 存档槽 Panel hover 选中效果
-	var panel: Panel = get_node("MainContainer/VBox/SlotContainer/Slot%d" % slot_index) as Panel
-	if panel:
-		panel.mouse_entered.connect(func(): panel.modulate = Color(1.12, 1.12, 1.12, 1))
-		panel.mouse_exited.connect(func(): panel.modulate = Color(1, 1, 1, 1))
+	panel.mouse_entered.connect(func(): panel.modulate = Color(1.12, 1.12, 1.12, 1))
+	panel.mouse_exited.connect(func(): panel.modulate = Color(1, 1, 1, 1))
 
 
 func refresh_all_slots() -> void:
-	for i in range(3):
+	for i in SaveSystem.SLOT_COUNT:
 		_refresh_slot(i)
 
 
@@ -54,14 +37,14 @@ func _refresh_slot(slot_index: int) -> void:
 	var slot_data: Dictionary = SaveSystem.get_slot(slot_index)
 	var is_empty: bool = SaveSystem.is_slot_empty(slot_index)
 
-	var p: String = "MainContainer/VBox/SlotContainer/Slot%d/Slot%dMargin/Slot%dVBox" % [slot_index, slot_index, slot_index]
-	var name_label: Label = get_node(p + "/Slot%dName" % slot_index) as Label
-	var status_label: Label = get_node(p + "/Slot%dStatus" % slot_index) as Label
-	var playtime_label: Label = get_node(p + "/Slot%dInfo/Slot%dPlaytime" % [slot_index, slot_index]) as Label
-	var last_played_label: Label = get_node(p + "/Slot%dInfo/Slot%dLastPlayed" % [slot_index, slot_index]) as Label
-	var select_label: Label = get_node(p + "/Slot%dBtns/Slot%dSelectBtn/Slot%dSelectLabel" % [slot_index, slot_index, slot_index]) as Label
-	var delete_btn: TextureButton = get_node(p + "/Slot%dBtns/Slot%dDeleteBtn" % [slot_index, slot_index]) as TextureButton
-	var panel: Panel = get_node("MainContainer/VBox/SlotContainer/Slot%d" % slot_index) as Panel
+	var panel: Panel = _slot_container.get_child(slot_index) as Panel
+	var content: VBoxContainer = panel.get_node("Margin/VBox") as VBoxContainer
+	var name_label: Label = content.get_node("Name") as Label
+	var status_label: Label = content.get_node("Status") as Label
+	var playtime_label: Label = content.get_node("Info/Playtime") as Label
+	var last_played_label: Label = content.get_node("Info/LastPlayed") as Label
+	var select_btn: Button = content.get_node("Buttons/SelectBtn") as Button
+	var delete_btn: Button = content.get_node("Buttons/DeleteBtn") as Button
 
 	var style: StyleBoxFlat = StyleBoxFlat.new()
 	style.border_width_left = 2
@@ -79,9 +62,8 @@ func _refresh_slot(slot_index: int) -> void:
 		status_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 		playtime_label.text = "游玩时间: --"
 		last_played_label.text = "上次游玩: --"
-		select_label.text = "创建"
-		if delete_btn:
-			delete_btn.visible = false
+		select_btn.text = "创建"
+		delete_btn.visible = false
 		style.bg_color = Color(0.12, 0.14, 0.18, 0.95)
 		style.border_color = Color(0.4, 0.4, 0.5, 1)
 	else:
@@ -90,14 +72,12 @@ func _refresh_slot(slot_index: int) -> void:
 		status_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5, 1))
 		playtime_label.text = "游玩时间: %s" % SaveSystem.get_playtime_text(slot_data.get("playtime", 0.0))
 		last_played_label.text = "上次游玩: %s" % SaveSystem.get_last_played_text(slot_data.get("last_played", 0))
-		select_label.text = "继续"
-		if delete_btn:
-			delete_btn.visible = true
+		select_btn.text = "继续"
+		delete_btn.visible = true
 		style.bg_color = Color(0.12, 0.18, 0.25, 0.95)
 		style.border_color = Color(0.3, 0.6, 1.0, 1)
 
-	if panel:
-		panel.add_theme_stylebox_override("panel", style)
+	panel.add_theme_stylebox_override("panel", style)
 
 
 func _on_slot_selected(slot_index: int) -> void:

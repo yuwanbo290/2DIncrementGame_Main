@@ -64,12 +64,8 @@ func load_save() -> void:
 	var parsed: Variant = JSON.parse_string(f.get_as_text())
 	f.close()
 	if typeof(parsed) == TYPE_DICTIONARY:
-		# 旧版本兼容：单存档迁移到多存档
 		var parsed_dict: Dictionary = parsed
-		if parsed_dict.get("version", 1) == 1:
-			_migrate_v1_to_v2(parsed_dict)
-		else:
-			data = parsed_dict
+		data = parsed_dict
 		# 确保 slots 数组完整
 		var slots: Array = data.get("slots", [])
 		while slots.size() < SLOT_COUNT:
@@ -88,21 +84,6 @@ func load_save() -> void:
 		# 确保 settings 存在
 		if not data.has("settings"):
 			data["settings"] = _default_settings()
-
-
-func _migrate_v1_to_v2(old: Dictionary) -> void:
-	var new_data: Dictionary = _default_data()
-	# 将旧的金币、统计迁移到第一个存档槽
-	var slots: Array = new_data["slots"]
-	var slot: Dictionary = slots[0]
-	slot["gold"] = old.get("gold", 0)
-	slot["stats"] = old.get("stats", {"rounds": 0, "best_kills": 0})
-	slot["last_played"] = Time.get_unix_time_from_system()
-	slot["created_at"] = Time.get_unix_time_from_system()
-	slot["name"] = "存档 1"
-	slots[0] = slot
-	new_data["slots"] = slots
-	data = new_data
 
 
 ## 写入存档到磁盘

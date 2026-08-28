@@ -1,0 +1,46 @@
+extends Node
+## Ponytail 重构的最小冒烟检查：验证关键场景可加载、配置副本隔离及原生碰撞类型。
+
+const SCENES: Array[String] = [
+	"res://Scenes/GameManager.tscn",
+	"res://Scenes/battle.tscn",
+	"res://Scenes/battle/ui/battle_result.tscn",
+	"res://Scenes/ui/start_ui.tscn",
+	"res://Scenes/ui/save_select.tscn",
+	"res://Scenes/ui/save_slot.tscn",
+	"res://Scenes/ui/settings.tscn",
+	"res://Scenes/ui/preparation.tscn",
+	"res://Scenes/ui/shop.tscn",
+	"res://Scenes/ui/weapon.tscn",
+	"res://Scenes/ui/out_of_battle_upgrade.tscn",
+	"res://Scenes/ui/confirm_dialog.tscn",
+]
+
+
+func _ready() -> void:
+	for path in SCENES:
+		var scene: PackedScene = load(path) as PackedScene
+		assert(scene != null, "场景加载失败: %s" % path)
+		var instance: Node = scene.instantiate()
+		assert(instance != null, "场景实例化失败: %s" % path)
+		instance.free()
+
+	var base: BaseConfig = load("res://Resources/Config/base_config.tres") as BaseConfig
+	var run_config: BaseConfig = base.duplicate(true) as BaseConfig
+	var original_attack: float = base.base_attack
+	run_config.base_attack += 1.0
+	assert(is_equal_approx(base.base_attack, original_attack), "本局配置污染了基础资源")
+
+	var bullet := Bullet.new()
+	var enemy := Enemy.new()
+	assert(bullet is Area2D and enemy is Area2D, "战斗碰撞节点必须使用 Area2D")
+	bullet.free()
+	enemy.free()
+
+	for filename in DirAccess.get_files_at("res://data"):
+		if filename.begins_with("~$"):
+			continue
+		assert(filename.get_extension().to_lower() == "xlsx", "data 目录只应保留 xlsx 数据源: %s" % filename)
+
+	print("[冒烟检查] 通过：%d 个场景" % SCENES.size())
+	get_tree().quit()

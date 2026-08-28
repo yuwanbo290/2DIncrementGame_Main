@@ -1,5 +1,5 @@
 class_name Enemy
-extends Node2D
+extends Area2D
 ## 哥布林敌人（色块占位实现）：Enemy 表驱动。
 ## 外观：带尖耳的圆形色块（颜色按 enemyID 从调色板取）+ 名字文字 + 头顶血条。
 ## 移动：俯视角战场游荡，enemyID 偶数走直线、奇数加正弦摆动（原型：不同哥布林不同轨迹，表内无轨迹字段，按 ID 区分）。
@@ -46,6 +46,7 @@ var is_boss: bool = false
 
 var _move_dir: Vector2 = Vector2.RIGHT
 var _move_time: float = 0.0
+var _body_color: Color = Color.WHITE
 var _health_bar: Polygon2D
 var _health_bg: Polygon2D
 
@@ -61,6 +62,15 @@ func setup(row: Dictionary, boss: bool = false) -> void:
 	move_speed = float(row.get("moveSpeed", 40.0))
 	var enemy_id: int = int(row.get("enemyID", 1))
 	var body_color: Color = BOSS_COLOR if is_boss else PALETTE[enemy_id % PALETTE.size()]
+	collision_layer = 1
+	collision_mask = 0
+	monitoring = false
+	monitorable = true
+	var collision_shape := CollisionShape2D.new()
+	var circle_shape := CircleShape2D.new()
+	circle_shape.radius = BODY_RADIUS
+	collision_shape.shape = circle_shape
+	add_child(collision_shape)
 
 	# 表内保留完整名称供日志/图鉴使用；战斗常驻标签去掉公共前缀，避免群怪时文字大面积重叠。
 	var display_name: String = str(row.get("enemyName", "哥布林"))
@@ -80,30 +90,8 @@ func setup(row: Dictionary, boss: bool = false) -> void:
 
 
 func _build_body(color: Color, label_text: String) -> void:
-	# 圆形头部色块
-	var body: Polygon2D = Polygon2D.new()
-	body.polygon = _make_circle_polygon(BODY_RADIUS, 28)
-	body.color = color
-	add_child(body)
-
-	# 尖耳让占位造型在没有正式美术时也能一眼识别为哥布林。
-	var ear_color: Color = color.darkened(0.16)
-	var left_ear: Polygon2D = Polygon2D.new()
-	left_ear.polygon = PackedVector2Array([
-		Vector2(-BODY_RADIUS + 4.0, -8.0),
-		Vector2(-BODY_RADIUS - 16.0, -2.0),
-		Vector2(-BODY_RADIUS + 3.0, 5.0),
-	])
-	left_ear.color = ear_color
-	add_child(left_ear)
-	var right_ear: Polygon2D = Polygon2D.new()
-	right_ear.polygon = PackedVector2Array([
-		Vector2(BODY_RADIUS - 4.0, -8.0),
-		Vector2(BODY_RADIUS + 16.0, -2.0),
-		Vector2(BODY_RADIUS - 3.0, 5.0),
-	])
-	right_ear.color = ear_color
-	add_child(right_ear)
+	_body_color = color
+	queue_redraw()
 
 	# 名字文字（色块中央）
 	var label: Label = Label.new()
@@ -118,6 +106,21 @@ func _build_body(color: Color, label_text: String) -> void:
 	add_child(label)
 	label.position = Vector2(-BODY_RADIUS, -BODY_RADIUS)
 	label.size = Vector2(BODY_RADIUS * 2.0, BODY_RADIUS * 2.0)
+
+
+func _draw() -> void:
+	draw_circle(Vector2.ZERO, BODY_RADIUS, _body_color)
+	var ear_color: Color = _body_color.darkened(0.16)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-BODY_RADIUS + 4.0, -8.0),
+		Vector2(-BODY_RADIUS - 16.0, -2.0),
+		Vector2(-BODY_RADIUS + 3.0, 5.0),
+	]), ear_color)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(BODY_RADIUS - 4.0, -8.0),
+		Vector2(BODY_RADIUS + 16.0, -2.0),
+		Vector2(BODY_RADIUS - 3.0, 5.0),
+	]), ear_color)
 
 
 func _build_health_bar() -> void:
@@ -137,15 +140,6 @@ func _build_health_bar() -> void:
 	_health_bar.color = Color(0.3, 0.9, 0.3, 0.95)
 	add_child(_health_bar)
 	_update_health_bar()
-
-
-## 生成圆形多边形顶点
-static func _make_circle_polygon(radius: float, segments: int) -> PackedVector2Array:
-	var pts: PackedVector2Array = PackedVector2Array()
-	for i in segments:
-		var angle: float = TAU * float(i) / float(segments)
-		pts.append(Vector2(cos(angle), sin(angle)) * radius)
-	return pts
 
 
 func _update_health_bar() -> void:

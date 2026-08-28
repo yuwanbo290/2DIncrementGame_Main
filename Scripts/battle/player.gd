@@ -14,7 +14,6 @@ const AIM_LINE_LEN := 44.0
 
 var fire_interval: float = 1.0
 var _cooldown: float = 0.0
-var _body: Polygon2D
 var _aim_line: Line2D
 
 
@@ -25,15 +24,7 @@ func setup(player_pos: Vector2, interval: float) -> void:
 
 
 func _build_body() -> void:
-	var pts: PackedVector2Array = PackedVector2Array()
-	for i in 24:
-		var angle: float = TAU * float(i) / 24.0
-		pts.append(Vector2(cos(angle), sin(angle)) * BODY_RADIUS)
-	_body = Polygon2D.new()
-	_body.polygon = pts
-	# 与哥布林的绿色调明确区分，避免战斗中混淆敌我。
-	_body.color = Color(0.28, 0.55, 0.76, 1)
-	add_child(_body)
+	queue_redraw()
 
 	var label: Label = Label.new()
 	label.text = "玩家"
@@ -54,6 +45,11 @@ func _build_body() -> void:
 	_aim_line.default_color = Color(1, 1, 1, 0.5)
 	_aim_line.points = PackedVector2Array([Vector2.ZERO, Vector2(0, -AIM_LINE_LEN)])
 	add_child(_aim_line)
+
+
+func _draw() -> void:
+	# 与哥布林的绿色调明确区分，避免战斗中混淆敌我。
+	draw_circle(Vector2.ZERO, BODY_RADIUS, Color(0.28, 0.55, 0.76, 1))
 
 
 func get_aim_direction() -> Vector2:
