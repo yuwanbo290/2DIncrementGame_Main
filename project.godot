@@ -29,10 +29,6 @@ window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
-[gui]
-
-theme/custom="res://Resources/button_theme.tres"
-
 [dotnet]
 
 project/assembly_name="2D_IncrementGame_main"
@@ -40,6 +36,10 @@ project/assembly_name="2D_IncrementGame_main"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/table_exporter/plugin.cfg")
+
+[gui]
+
+theme/custom="res://Resources/button_theme.tres"
 
 [input]
 
