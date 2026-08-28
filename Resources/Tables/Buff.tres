@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://buu60h77quw6v"]
+[gd_resource type="Resource" script_class="TableResource" format=3]
 
-[ext_resource type="Script" uid="uid://d04tnnay5eyuf" path="res://Scripts/core/table_resource.gd" id="1_w855g"]
+[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_w855g"]
 
 [resource]
 script = ExtResource("1_w855g")
@@ -13,66 +13,54 @@ rows = Array[Dictionary]([{
 "weight": 100
 }, {
 "Id": 2,
-"buffName": "分裂射击",
-"desc": "每次射击额外发射一枚子弹",
-"maxLevel": 2,
-"weight": 30
-}, {
-"Id": 3,
 "buffName": "弹性子弹",
 "desc": "子弹命中屏幕边界后可额外弹射一次",
 "maxLevel": 3,
 "weight": 60
 }, {
-"Id": 4,
+"Id": 3,
 "buffName": "重型弹头",
 "desc": "显著提高子弹伤害，并提高暴击几率",
 "maxLevel": 2,
 "weight": 30
 }, {
-"Id": 5,
-"buffName": "弹幕扩容",
-"desc": "一次射击增加轮数",
-"maxLevel": 2,
-"weight": 20
-}, {
-"Id": 6,
+"Id": 4,
 "buffName": "要害射击",
 "desc": "提升射击的暴击几率",
 "maxLevel": 3,
 "weight": 50
 }, {
-"Id": 7,
+"Id": 5,
 "buffName": "爆裂弹头",
 "desc": "提升射击的暴击伤害",
 "maxLevel": 3,
 "weight": 50
 }, {
-"Id": 8,
+"Id": 6,
 "buffName": "疾风速射",
 "desc": "提升射击速度",
 "maxLevel": 3,
 "weight": 50
 }, {
-"Id": 9,
+"Id": 7,
 "buffName": "迅捷爆射",
 "desc": "提升射击速度的同时提升暴击几率",
 "maxLevel": 2,
 "weight": 30
 }, {
-"Id": 10,
+"Id": 8,
 "buffName": "狂暴射击",
 "desc": "提升射击速度的同时提大亨暴击伤害",
 "maxLevel": 2,
 "weight": 30
 }, {
-"Id": 11,
+"Id": 9,
 "buffName": "无尽之力",
 "desc": "提升暴击几率和暴击伤害",
 "maxLevel": 2,
 "weight": 30
 }, {
-"Id": 12,
+"Id": 10,
 "buffName": "明镜止水",
 "desc": "提升攻击，暴击，暴击伤害，攻击速度",
 "maxLevel": 1,

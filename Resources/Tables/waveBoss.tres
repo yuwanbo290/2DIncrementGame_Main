@@ -1,48 +1,48 @@
-[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://dgww7l8g6r4ig"]
+[gd_resource type="Resource" script_class="TableResource" format=3]
 
-[ext_resource type="Script" uid="uid://d04tnnay5eyuf" path="res://Scripts/core/table_resource.gd" id="1_coixn"]
+[ext_resource type="Script" path="res://Scripts/core/table_resource.gd" id="1_coixn"]
 
 [resource]
 script = ExtResource("1_coixn")
 table_name = "waveBoss"
 rows = Array[Dictionary]([{
-"CreateCost": 10,
+"CreateCost": 18,
 "enemyId": 11,
 "name": "哥布林boss1",
 "waveNumber": 1,
 "weight": 100
 }, {
-"CreateCost": 15,
+"CreateCost": 25,
 "enemyId": 12,
 "name": "哥布林boss2",
 "waveNumber": 2,
 "weight": 100
 }, {
-"CreateCost": 18,
+"CreateCost": 32,
 "enemyId": 13,
 "name": "哥布林boss3",
 "waveNumber": 3,
 "weight": 100
 }, {
-"CreateCost": 20,
+"CreateCost": 45,
 "enemyId": 14,
 "name": "哥布林boss4",
 "waveNumber": 4,
 "weight": 100
 }, {
-"CreateCost": 22,
+"CreateCost": 60,
 "enemyId": 15,
 "name": "哥布林boss5",
 "waveNumber": 5,
 "weight": 100
 }, {
-"CreateCost": 25,
+"CreateCost": 85,
 "enemyId": 16,
 "name": "哥布林boss6",
 "waveNumber": 6,
 "weight": 100
 }, {
-"CreateCost": 25,
+"CreateCost": 140,
 "enemyId": 17,
 "name": "哥布林boss7",
 "waveNumber": 7,

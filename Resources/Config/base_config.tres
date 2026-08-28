@@ -5,12 +5,7 @@
 [resource]
 script = ExtResource("1_baseconfig")
 base_attack = 2.0
-spawn_interval = 2.0
-spawn_per_wave = 1
-exp_base = 6.0
-exp_power = 1.4
-exp_linear = 8.0
-exp_gain_rate = 0.0
-coin_gain_rate = 0.0
+spawn_interval = 1.8
+max_enemies = 15
 bullet_speed = 1080.0
 spread_half_angle = 0.03

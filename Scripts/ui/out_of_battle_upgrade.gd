@@ -6,15 +6,15 @@ extends UIBase
 
 
 ## 技能节点尺寸（与 SkillTreeCanvas.NODE_W/H 保持一致）
-const NODE_W := 200.0
-const NODE_H := 160.0
+const NODE_W := 160.0
+const NODE_H := 120.0
 ## 同层节点水平间距
-const H_GAP := 48.0
+const H_GAP := 40.0
 ## 层间垂直间距
-const V_GAP := 72.0
+const V_GAP := 60.0
 ## 画布内边距
 const PAD := 24.0
-const BUTTON_SIZE := Vector2(220, 46)
+const BUTTON_SIZE := Vector2(200, 42)
 
 const COLOR_TEXT := Color(1, 1, 1, 1)
 const COLOR_DESC := Color(0.7, 0.7, 0.7, 1)
@@ -271,7 +271,8 @@ func _build_detail() -> void:
 	pre_label.add_theme_font_size_override("font_size", 15)
 	_detail_vbox.add_child(pre_label)
 
-	# 下一级效果（读取 skillLevel.desc 配置文本）
+	# 上一级 / 下一级效果（读取 skillLevel.desc 配置文本；上一级为 0 级显示「无」）
+	var prev_desc: String = _get_level_desc(skill_id, level)
 	var next_desc: String = _get_level_desc(skill_id, level + 1)
 	if not unlocked:
 		var lock_label := Label.new()
@@ -286,12 +287,25 @@ func _build_detail() -> void:
 		max_label.add_theme_color_override("font_color", COLOR_DISABLED)
 		_detail_vbox.add_child(max_label)
 	else:
-		var effect_label := Label.new()
-		effect_label.text = "下一级效果：%s" % (next_desc if next_desc != "" else "（未配置描述）")
-		effect_label.add_theme_font_size_override("font_size", 16)
-		effect_label.add_theme_color_override("font_color", COLOR_TEXT)
-		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		_detail_vbox.add_child(effect_label)
+		var prev_label := Label.new()
+		prev_label.text = "上一级：%s" % ("无" if prev_desc == "" else prev_desc)
+		prev_label.add_theme_font_size_override("font_size", 16)
+		prev_label.add_theme_color_override("font_color", COLOR_DESC)
+		prev_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_detail_vbox.add_child(prev_label)
+
+		var arrow_label := Label.new()
+		arrow_label.text = "↓"
+		arrow_label.add_theme_font_size_override("font_size", 20)
+		arrow_label.add_theme_color_override("font_color", COLOR_GOLD)
+		_detail_vbox.add_child(arrow_label)
+
+		var next_label := Label.new()
+		next_label.text = "下一级：%s" % (next_desc if next_desc != "" else "（未配置描述）")
+		next_label.add_theme_font_size_override("font_size", 16)
+		next_label.add_theme_color_override("font_color", COLOR_TEXT)
+		next_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_detail_vbox.add_child(next_label)
 
 		var cost_label := Label.new()
 		cost_label.text = "升级费用：%d 金币" % next_cost

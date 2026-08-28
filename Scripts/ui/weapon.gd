@@ -15,6 +15,8 @@ const COLOR_STAT := Color(0.75, 0.85, 1, 1)
 const COLOR_EQUIPPED := Color(0.5, 1, 0.6, 1)
 const COLOR_DISABLED := Color(0.5, 0.5, 0.5, 1)
 
+@onready var _stats_label: Label = %StatsLabel
+
 
 func _ready() -> void:
 	($TopBar/BackBtn as Button).pressed.connect(_on_back_pressed)
@@ -22,6 +24,7 @@ func _ready() -> void:
 
 
 func refresh() -> void:
+	_stats_label.text = PlayerStatsService.format_stats(PlayerStatsService.get_meta_stats())
 	_refresh_equipped_label()
 	_build_weapon_list()
 
@@ -159,8 +162,7 @@ func _on_equip_pressed(weapon_id: int) -> void:
 	if not WeaponService.equip(weapon_id):
 		return
 	SaveSystem.save()
-	_refresh_equipped_label()
-	_build_weapon_list()
+	refresh()
 
 
 func _on_back_pressed() -> void:

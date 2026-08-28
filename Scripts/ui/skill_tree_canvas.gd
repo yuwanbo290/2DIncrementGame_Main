@@ -6,8 +6,8 @@ extends Control
 
 
 ## 与 out_of_battle_upgrade.gd 的节点尺寸保持一致
-const NODE_W := 200.0
-const NODE_H := 160.0
+const NODE_W := 160.0
+const NODE_H := 120.0
 ## 已解锁连线的颜色
 const LINE_ACTIVE := Color(0.7, 0.85, 0.4, 0.9)
 ## 未解锁连线的颜色
@@ -18,7 +18,6 @@ const LINE_LOCKED := Color(0.35, 0.35, 0.4, 0.6)
 var node_pos: Dictionary = {}
 ## skill_id -> 父 skill_id（根节点为 0）
 var parent_map: Dictionary = {}
-
 
 ## 注入布局数据并重绘。
 func setup(positions: Dictionary, parents: Dictionary) -> void:

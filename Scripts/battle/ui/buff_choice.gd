@@ -44,7 +44,7 @@ func _ready() -> void:
 ## 显示候选卡片。
 ##
 ## 每条候选数据由 BattleManager 组装，包含：
-## id / name / description / next_level / max_level / effect_text。
+## id / name / next_level / max_level / prev_desc / next_desc。
 ## 当有效候选不足三项时，多余卡片会自动隐藏，避免出现可点击的空选项。
 func show_choices(choices: Array[Dictionary]) -> void:
 	_accepting_input = not choices.is_empty()
@@ -81,13 +81,14 @@ func hide_choices() -> void:
 # ---- 卡片文本组装 ----
 
 ## 固定卡片使用一个 Button 的多行文字显示全部信息，从而减少重复节点和脚本数量。
-## 描述只显示配置文本（buffLevel.desc），不叠加其他来源。
+## 展示「上一级 → 下一级」效果（上一级为 0 级显示「无」）。
 func _format_card_text(choice: Dictionary) -> String:
-	return "%s\n升级至 Lv.%d / %d\n\n%s" % [
+	return "%s\n升级至 Lv.%d / %d\n\n上一级：%s\n↓\n下一级：%s" % [
 		str(choice.get("name", "未知升级")),
 		int(choice.get("next_level", 1)),
 		int(choice.get("max_level", 1)),
-		str(choice.get("description", "")),
+		str(choice.get("prev_desc", "无")),
+		str(choice.get("next_desc", "")),
 	]
 
 

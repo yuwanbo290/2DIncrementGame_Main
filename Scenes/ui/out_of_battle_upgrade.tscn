@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://Scripts/ui/out_of_battle_upgrade.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://Textures/ui/menu_bg.png" id="2_bg"]
 [ext_resource type="Script" path="res://Scripts/ui/skill_tree_canvas.gd" id="4_canvas"]
+[ext_resource type="Script" path="res://Scripts/ui/drag_scroll.gd" id="5_drag"]
 
 [sub_resource type="StyleBoxFlat" id="1_panel"]
 bg_color = Color(0.08, 0.1, 0.14, 0.92)
@@ -32,6 +33,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_bg")
+stretch_mode = 6
 
 [node name="TopBar" type="HBoxContainer" parent="."]
 layout_mode = 0
@@ -108,10 +110,11 @@ theme_override_constants/margin_bottom = 15
 [node name="ScrollContainer" type="ScrollContainer" parent="MainContainer/Panel/HBox/LeftMargin"]
 layout_mode = 2
 size_flags_vertical = 3
+script = ExtResource("5_drag")
 
 [node name="TreeCanvas" type="Control" parent="MainContainer/Panel/HBox/LeftMargin/ScrollContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 4
 script = ExtResource("4_canvas")
 
 [node name="RightPanel" type="PanelContainer" parent="MainContainer/Panel/HBox"]

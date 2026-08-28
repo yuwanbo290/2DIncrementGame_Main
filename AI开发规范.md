@@ -265,14 +265,21 @@ battle.tscn (Node2D + battle_manager.gd)
 ### 10.5 波次 / Boss 规范
 - 波次推进由 `waveBoss` 表驱动：当前波内普通敌人击杀数达到 `CreateCost` → 刷新 Boss；击杀 Boss → 进入下一波；最后一波 Boss 击杀后直接结算。
 - 普通刷怪按 `generateProbability` 表（`waveNumber`/`enemyId`/`weight`）加权随机；当前每波直接读取唯一的 `waveBoss` 行。
-- 刷怪节奏用 `base_config` 的 `spawn_interval` / `spawn_per_wave`；单局时长 `round_time`。Boss 存活期间仍正常刷小怪；击杀 Boss 后场上小怪保留、直接进入下一波。
+- 刷怪节奏用 `base_config` 的 `spawn_interval` / `spawn_per_wave`；单局时长 `round_time`。场上全灭时立即刷新一批，否则按间隔刷怪；场上敌人数量达到 `max_enemies` 上限时停止刷怪。Boss 存活期间仍正常刷小怪；击杀 Boss 后场上小怪保留、直接进入下一波。
+- 敌人移动为**屏幕内随机游走**：每隔随机时长更换方向，屏幕边界反弹，不会离开屏幕（`enemy.gd` 的 `_process` / `_bounce_in_viewport`）。
 
 ### 10.6 局内 Buff 规范
 - 击杀敌人获得经验（`Enemy.exp` 列）→ 经验攒满 `Exp(level) = exp_base × level^exp_power + exp_linear × (level-1)` 后升级并扣除该级所需经验，每次升级触发 `buff_choice_count` 选 1（3 选 1）。
-- `buffLevel` 表使用 `changeAttr1~4`/`attrValue1~4` + 每级 `desc`；升级卡面描述**只读取该配置文本**（不再叠加 Buff 表通用描述），属性 key 与技能表共用同一入口（`_apply_attribute_change`），支持 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg` 等）。
+- `buffLevel` 表使用 `changeAttr1~4`/`attrValue1~4` + 每级 `desc`；升级卡面用该配置文本展示「上一级 → 下一级」，不叠加 Buff 表通用描述。属性 key 与技能表共用同一入口（`_apply_attribute_change`），支持 base_config 字段名（`base_attack`/`base_attack_speed`/`base_crit_rate`/`base_crit_dmg` 等）。
 - Buff 效果为**局内临时**，保存在战斗管理器内存字典中，**绝不写 SaveSystem**。
 
-### 10.7 战斗循环结束
+### 10.7 属性面板与暂停
+- 玩家属性统一描述：**攻击力 / 攻击速度 / 暴击 / 暴击伤害 / 体力（原单局时间）/ 子弹分裂 / 攻击轮数**；显示统一走 `PlayerStatsService.format_stats`，局内 Buff 提供的加成以 `（+x）` 形式显示在对应数值后。
+- **暴击率超过 100%**：每 1% 溢出暴击率转化为 1.5% 暴击伤害（`PlayerStatsService.get_effective_crit`，隐藏机制不显示在面板）。
+- 战斗内暂停按钮打开暂停菜单（`PauseMenuUI`，显示当前属性 + 继续/返回备战）；倒计时显示为「体力: N」。
+- 长列表界面（局外养成 / 商店 / 武器）统一用 `DragScroll`（ScrollContainer 挂载）支持鼠标拖拽滚动。
+
+### 10.8 战斗循环结束
 - 单局结束（时间到 / 死亡）→ 结算金币与统计落盘 → `UIManager.clear_all()` + 返回 `preparation.tscn`（或 `change_scene_to_file`）。
 
 ---

@@ -1,10 +1,11 @@
 extends Node
-## Ponytail 重构的最小冒烟检查：验证关键场景可加载、配置副本隔离及原生碰撞类型。
+## Ponytail 重构的最小冒烟检查：验证关键场景、配置副本、敌人上限、有效暴击与原生碰撞。
 
 const SCENES: Array[String] = [
 	"res://Scenes/GameManager.tscn",
 	"res://Scenes/battle.tscn",
 	"res://Scenes/battle/ui/battle_result.tscn",
+	"res://Scenes/battle/ui/pause_menu.tscn",
 	"res://Scenes/ui/start_ui.tscn",
 	"res://Scenes/ui/save_select.tscn",
 	"res://Scenes/ui/save_slot.tscn",
@@ -30,6 +31,11 @@ func _ready() -> void:
 	var original_attack: float = base.base_attack
 	run_config.base_attack += 1.0
 	assert(is_equal_approx(base.base_attack, original_attack), "本局配置污染了基础资源")
+	assert(base.max_enemies == 15, "场上敌人上限配置未加载")
+
+	var crit: Dictionary = PlayerStatsService.get_effective_crit(1.2, 1.5)
+	assert(is_equal_approx(float(crit["rate"]), 1.0), "有效暴击率未封顶")
+	assert(is_equal_approx(float(crit["dmg"]), 1.8), "溢出暴击率未转化为暴击伤害")
 
 	var bullet := Bullet.new()
 	var enemy := Enemy.new()
