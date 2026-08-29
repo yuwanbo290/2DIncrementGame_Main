@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WaveEventConfig" format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/wave_event_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+event_name = "雷暴天"
+effect_time = 25.0
+thunder_interval_min = 4.0
+thunder_interval_max = 6.0
+thunder_count_min = 1
+thunder_count_max = 3
+thunder_boss_damage_ratio = 0.1

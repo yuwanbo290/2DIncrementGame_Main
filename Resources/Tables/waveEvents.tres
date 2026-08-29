@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="TableResource" format=3 uid="uid://ci45h0pk3e7ym"]
+
+[ext_resource type="Script" uid="uid://d04tnnay5eyuf" path="res://Scripts/core/table_resource.gd" id="1_n70il"]
+
+[resource]
+script = ExtResource("1_n70il")
+table_name = "waveEvents"
+rows = Array[Dictionary]([{
+"desc": "场景中每5s随机降下1-3落雷劈怪物，非boss直接秒，boss掉10%",
+"effectTime": 0.0,
+"eventsId": 1,
+"name": "雷暴天",
+"weight": 25
+}, {
+"desc": "场景中每2-5s掉落1-2块陨石，陨石点燃哥布林并造成50%hp伤害，点燃效果每秒掉10%hp，5s后熄灭，再次点燃刷新事件，档两只哥布林接触会传染点燃效果",
+"effectTime": 0.0,
+"eventsId": 2,
+"name": "火山爆发",
+"weight": 25
+}, {
+"desc": "场景每5-8s吹起绿色狂风，感染场景中所有哥布林，感染效果每秒掉10%hp生命",
+"effectTime": 0.0,
+"eventsId": 3,
+"name": "狂风瘟疫",
+"weight": 25
+}, {
+"desc": "场景中心出现一个老虎机，一次攻击击败后随机出现奖励或精英敌人（双倍血量双倍奖励对应敌人，体型更大）",
+"effectTime": 0.0,
+"eventsId": 4,
+"name": "老虎机？？？",
+"weight": 25
+}])

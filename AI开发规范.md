@@ -263,10 +263,11 @@ battle.tscn (Node2D + battle_manager.gd)
 - 局外养成的技能等级存 `skill_levels`（落盘）；局内技能/临时增益不落盘；局外存金币 + 技能等级 + 统计。
 
 ### 10.5 波次 / Boss 规范
-- 波次推进由 `waveBoss` 表驱动：当前波内普通敌人击杀数达到 `CreateCost` → 刷新 Boss；击杀 Boss → 进入下一波；最后一波 Boss 击杀后直接结算。
+- 波次推进由 `waveBoss` 表驱动：当前波内普通敌人击杀数达到 `CreateCost` → 刷新 Boss；**击杀 Boss 后弹出「进入下一波 / 继续当前」双按钮并暂停时间（`get_tree().paused`）**：点「进入下一波」**清除场上残留存活敌人**后推进（最后一波为「完成讨伐」点击结算），点「继续当前」留在本波继续刷小怪战斗，直至体力耗尽结算。
 - 普通刷怪按 `generateProbability` 表（`waveNumber`/`enemyId`/`weight`）加权随机；当前每波直接读取唯一的 `waveBoss` 行。
-- 刷怪节奏用 `base_config` 的 `spawn_interval` / `spawn_per_wave`；单局时长 `round_time`。场上全灭时立即刷新一批，否则按间隔刷怪；场上敌人数量达到 `max_enemies` 上限时停止刷怪。Boss 存活期间仍正常刷小怪；击杀 Boss 后场上小怪保留、直接进入下一波。
+- 刷怪节奏用 `base_config` 的 `spawn_interval` / `spawn_per_wave`；单局时长 `round_time`（界面显示「体力」）。场上全灭时立即刷新一批，否则按间隔刷怪；场上敌人数量达到 `max_enemies` 上限时停止刷怪。Boss 存活期间仍正常刷小怪；击杀 Boss 后场上小怪保留。
 - 敌人移动为**屏幕内随机游走**：每隔随机时长更换方向，屏幕边界反弹，不会离开屏幕（`enemy.gd` 的 `_process` / `_bounce_in_viewport`）。
+- 进入下一波时按 `waveEvents.weight` **加权随机触发一次波次事件**（雷暴天 / 火山爆发 / 狂风瘟疫 / 老虎机）：播放随机开场动画后按 `Resources/Events/wave_event_<id>.tres`（`WaveEventConfig`）配置生效，持续 `effect_time` 秒；效果数值改 `.tres` 即可配平，勿改代码。
 
 ### 10.6 局内 Buff 规范
 - 击杀敌人获得经验（`Enemy.exp` 列）→ 经验攒满 `Exp(level) = exp_base × level^exp_power + exp_linear × (level-1)` 后升级并扣除该级所需经验，每次升级触发 `buff_choice_count` 选 1（3 选 1）。

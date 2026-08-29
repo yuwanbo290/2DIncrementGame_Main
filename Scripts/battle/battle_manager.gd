@@ -9,6 +9,7 @@ extends Node2D
 const TABLE_SPAWN := "generateProbability"
 const TABLE_ENEMY := "Enemy"
 const TABLE_WAVE_BOSS := "waveBoss"
+const TABLE_WAVE_EVENTS := "waveEvents"
 const TABLE_BUFF := "Buff"
 const TABLE_BUFF_LEVEL := "buffLevel"
 
@@ -54,6 +55,8 @@ var _finished: bool = false
 var _wave_kills: int = 0
 ## Boss 是否在场（防止重复生成，击杀后进入下一波）
 var _boss_active: bool = false
+## Boss 已被击败、等待玩家点击「进入下一波 / 完成讨伐」；点击前保持当前波战斗直至体力耗尽。
+var _boss_defeated_pending: bool = false
 ## 当前提示动画；新提示出现时会终止旧动画。
 var _notice_tween: Tween
 ## 本局累计造成的伤害（含暴击放大），结算界面展示
@@ -91,6 +94,10 @@ var _last_exp_target: float = -1.0
 @onready var _notice_label: Label = $UI/NoticeLabel
 @onready var _exp_bar: ProgressBar = $UI/ExpBar
 @onready var _exp_label: Label = $UI/ExpBar/ExpLabel
+@onready var _wave_choice_panel: PanelContainer = $UI/WaveChoicePanel
+@onready var _next_wave_btn: Button = $UI/WaveChoicePanel/Margin/HBox/NextWaveBtn
+@onready var _stay_btn: Button = $UI/WaveChoicePanel/Margin/HBox/StayBtn
+@onready var _event_system: WaveEventSystem = $World/WaveEventSystem
 
 
 func _ready() -> void:
@@ -118,6 +125,14 @@ func _ready() -> void:
 	_pause_ui.resume_pressed.connect(_on_pause_resume)
 	_pause_ui.quit_pressed.connect(_on_pause_quit)
 	_buff_choice_ui.buff_selected.connect(_on_buff_selected)
+	if _next_wave_btn:
+		_next_wave_btn.pressed.connect(_on_next_wave_pressed)
+	if _stay_btn:
+		_stay_btn.pressed.connect(_on_stay_pressed)
+	if _wave_choice_panel:
+		_wave_choice_panel.hide()
+	if _event_system:
+		_event_system.reward_gold.connect(_on_event_reward_gold)
 	_result_ui.continue_pressed.connect(_on_result_continue)
 
 	# 窗口尺寸变化时玩家与背景跟随（如切换全屏/分辨率）
@@ -406,6 +421,10 @@ func _on_buff_selected(buff_id: int) -> void:
 	_apply_next_buff_level(buff_id)
 	_close_buff_choice()
 
+	# 若 Boss 等待玩家选择推进，选完 Buff 后继续保持暂停（选择面板仍处于打开状态）
+	if _boss_defeated_pending and _wave_choice_panel != null and _wave_choice_panel.visible:
+		get_tree().paused = true
+
 	# 若经验仍足够下一级（一次击杀大量经验连升多级），恢复战斗后继续补弹下一次选择。
 	call_deferred("_check_level_up")
 
@@ -498,9 +517,9 @@ func _get_current_wave_boss() -> Dictionary:
 	return TableDB.get_first(TABLE_WAVE_BOSS, "waveNumber", _stage)
 
 
-## 本波击杀数达到 waveBoss.CreateCost 时刷新 Boss（Boss 在场时不再重复触发）。
+## 本波击杀数达到 waveBoss.CreateCost 时刷新 Boss（Boss 在场或等待推进时不再触发）。
 func _check_boss_spawn() -> void:
-	if _boss_active or _finished:
+	if _boss_active or _boss_defeated_pending or _finished:
 		return
 	var boss_row: Dictionary = _get_current_wave_boss()
 	if boss_row.is_empty():
@@ -536,17 +555,97 @@ func _spawn_boss() -> void:
 	_show_notice("⚠ BOSS 来袭：%s ⚠" % str(pick.get("name", "Boss")), 2.5)
 
 
-## Boss 被击杀：推进到下一波；最后一波打完直接结算（场上普通敌人保留不清除，Boss 存活期间也照常刷怪）。
+## Boss 被击杀：弹出「进入下一波 / 继续当前」双按钮并暂停时间，等待玩家选择。
+## 「进入下一波」推进波次；「继续当前」留在本波刷怪，直至体力耗尽结算。
 func _on_boss_defeated() -> void:
 	_boss_active = false
 	_wave_kills = 0
+	_boss_defeated_pending = true
+	_show_notice("BOSS 已击破！", 2.0)
+	if _wave_choice_panel == null:
+		# 兜底：面板缺失时自动推进，避免卡关
+		_advance_next_wave()
+		return
+	# 延迟到本帧 Buff 升级检查之后显示，避免与升级三选一弹层互相抢占暂停
+	call_deferred("_show_wave_choice")
 
+
+## 显示「进入下一波 / 继续当前」选择面板并暂停场景树（体力倒计时与战斗全部暂停）。
+func _show_wave_choice() -> void:
+	if not _boss_defeated_pending or _finished:
+		return
+	_next_wave_btn.text = "完成讨伐" if _stage >= _max_stage else "进入下一波"
+	_wave_choice_panel.show()
+	get_tree().paused = true
+
+
+## 点击「进入下一波 / 完成讨伐」：恢复时间并推进波次（最后一波结算）。
+func _on_next_wave_pressed() -> void:
+	if not _boss_defeated_pending:
+		return
+	get_tree().paused = false
+	_advance_next_wave()
+
+
+## 点击「继续当前」：留在本波战斗（不再刷新 Boss），恢复时间直至体力耗尽结算。
+func _on_stay_pressed() -> void:
+	if not _boss_defeated_pending:
+		return
+	_boss_defeated_pending = true
+	if _wave_choice_panel:
+		_wave_choice_panel.hide()
+	get_tree().paused = false
+
+
+## 实际推进波次 / 结算：由「进入下一波」或兜底调用。
+func _advance_next_wave() -> void:
+	_boss_defeated_pending = false
+	if _wave_choice_panel:
+		_wave_choice_panel.hide()
+	# 清除当前场景残留的存活敌人（非死亡），避免混入下一波
+	_clear_enemies()
 	if _stage >= _max_stage:
 		_show_notice("🎉 讨伐完成！", 3.0)
 		_finish_round()
 		return
 	_stage += 1
+	_wave_kills = 0
 	_show_notice("进入第 %d 波" % _stage, 2.0)
+	# 进入下一波：触发随机波次事件（播放动画后应用配置效果）
+	_trigger_wave_event()
+
+
+## 从 waveEvents 表加权随机选一个事件并触发。
+func _trigger_wave_event() -> void:
+	var rows: Array[Dictionary] = TableDB.rows_of(TABLE_WAVE_EVENTS)
+	if rows.is_empty():
+		return
+	var total_weight: int = 0
+	for row in rows:
+		total_weight += int(row.get("weight", 1))
+	var roll: int = randi() % maxi(total_weight, 1)
+	var pick: Dictionary = rows[0]
+	for row in rows:
+		roll -= int(row.get("weight", 1))
+		if roll < 0:
+			pick = row
+			break
+	if _event_system:
+		_event_system.trigger_event(pick, _stage)
+
+
+## 老虎机奖励金币计入本局收益。
+func _on_event_reward_gold(amount: int) -> void:
+	_gold += amount
+	_update_hud()
+	_show_notice("🎰 奖励 +%d 金币" % amount, 2.0)
+
+
+## 清除场上所有存活的敌人（进入下一波前清场；Boss 已死亡，残留为普通小怪）。
+func _clear_enemies() -> void:
+	for enemy in get_tree().get_nodes_in_group(ENEMY_GROUP):
+		if is_instance_valid(enemy):
+			enemy.queue_free()
 
 
 # ---- 射击 ----
@@ -687,7 +786,7 @@ func _update_hud() -> void:
 	# 最后 10 秒只在整数秒变化时脉冲一次，不再逐帧修改字号。
 	var remain: int = ceili(_time_left)
 	if remain != _last_timer_second:
-		_big_timer_label.text = str(remain)
+		_big_timer_label.text = "体力: %d" % remain
 		_big_timer_label.add_theme_color_override(
 			"font_color",
 			Color("c84d45") if remain <= 10 else Color("e6b84a")
@@ -708,6 +807,9 @@ func _update_hud() -> void:
 
 func _finish_round() -> void:
 	_finished = true
+	_boss_defeated_pending = false
+	if _wave_choice_panel:
+		_wave_choice_panel.hide()
 	_close_buff_choice()
 	# 展示结算弹层并暂停；金币落盘与统计更新延后到玩家点「返回备战」确认时执行
 	_is_result_open = true

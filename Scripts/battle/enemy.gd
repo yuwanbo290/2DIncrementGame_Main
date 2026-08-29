@@ -43,6 +43,8 @@ var exp_value: float = 1.0
 var move_speed: float = 40.0
 ## 是否为 Boss（waveBoss 表驱动）：放大体型、深红配色、血条常驻
 var is_boss: bool = false
+## 是否为老虎机（waveEvents 事件生成）：1 血、不可移动，击破后由事件系统处理奖励
+var is_slot_machine: bool = false
 
 ## 随机更换移动方向的最小 / 最大间隔（秒）：敌人随机游走，不做规则轨迹。
 const MIN_DIR_CHANGE_TIME := 0.6
@@ -57,6 +59,7 @@ var _move_time: float = 0.0
 var _body_color: Color = Color.WHITE
 ## 下次更换移动方向的随机间隔
 var _dir_change_interval: float = 1.0
+var _label: Label
 var _health_bar: Polygon2D
 var _health_bg: Polygon2D
 
@@ -117,6 +120,7 @@ func _build_body(color: Color, label_text: String) -> void:
 	add_child(label)
 	label.position = Vector2(-BODY_RADIUS, -BODY_RADIUS)
 	label.size = Vector2(BODY_RADIUS * 2.0, BODY_RADIUS * 2.0)
+	_label = label
 
 
 func _draw() -> void:
@@ -178,6 +182,22 @@ func take_damage(amount: float) -> void:
 	took_damage.emit(self)
 	if health <= 0.0:
 		died.emit(self)
+
+
+## 配置为老虎机（waveEvents 事件生成）：1 血、不可移动、紫色外观，击破后由事件系统处理奖励。
+func setup_slot_machine() -> void:
+	is_slot_machine = true
+	max_health = 1.0
+	health = 1.0
+	coin = 0.0
+	exp_value = 0.0
+	move_speed = 0.0
+	_body_color = Color(0.6, 0.35, 0.75, 1)
+	queue_redraw()
+	if _label:
+		_label.text = "🎰 老虎机"
+		_label.add_theme_color_override("font_color", Color(1, 0.9, 0.5, 1))
+	_update_health_bar()
 
 
 func _process(delta: float) -> void:

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WaveEventConfig" format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/wave_event_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+event_name = "火山爆发"
+effect_time = 25.0
+meteor_interval_min = 2.0
+meteor_interval_max = 5.0
+meteor_count_min = 1
+meteor_count_max = 2
+meteor_damage_ratio = 0.5
+burn_damage_ratio = 0.1
+burn_duration = 5.0
+meteor_radius = 70.0

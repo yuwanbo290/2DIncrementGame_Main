@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="WaveEventConfig" format=3]
+
+[ext_resource type="Script" path="res://Scripts/core/wave_event_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+event_name = "狂风瘟疫"
+effect_time = 20.0
+plague_interval_min = 5.0
+plague_interval_max = 8.0
+plague_damage_ratio = 0.1

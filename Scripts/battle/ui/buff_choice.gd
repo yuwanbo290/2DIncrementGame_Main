@@ -140,7 +140,7 @@ func _on_opening_finished() -> void:
 	if not visible:
 		return
 	_accepting_input = true
-	var focus_target: Button
+	var focus_target: Button = null
 	for index in _choice_buttons.size():
 		var button: Button = _choice_buttons[index]
 		button.disabled = _choice_ids[index] <= 0
